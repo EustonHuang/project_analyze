@@ -20,13 +20,16 @@ main { flex: 1; display: flex; min-height: 0; }
 }
 #treePanel.collapsed { width: 0; min-width: 0; padding: 0; border: none; overflow: hidden; }
 .phase-block { margin-bottom: 12px; }
-.phase-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.phase-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; cursor: pointer; user-select: none; }
+.phase-head:hover { background: #eef2ff; }
 .phase-badge {
   font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #e5e7eb; color: #374151; text-transform: uppercase;
 }
 .phase-badge.loop { background: #ede9fe; color: #6d28d9; }
 .phase-badge.conditional { background: #fef3c7; color: #92400e; }
+.phase-badge.parallel { background: #d1fae5; color: #065f46; }
 .phase-title { font-weight: 600; font-size: 13px; color: #111827; }
+.phase-block.collapsed .phase-list { display: none; }
 .phase-list { display: flex; flex-direction: column; gap: 2px; }
 .node-row {
   display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 4px;
@@ -35,18 +38,21 @@ main { flex: 1; display: flex; min-height: 0; }
 .node-row:hover { background: #dbeafe; }
 .node-row.selected { background: #2563eb; color: #fff; }
 .node-icon { font-size: 13px; width: 16px; text-align: center; }
+.node-id { font-size: 11px; font-weight: 700; color: #6b7280; background: #eef2ff; padding: 0 4px; border-radius: 3px; }
+.node-row.selected .node-id { background: #1e40af; color: #dbeafe; }
 .node-label { flex: 1; }
 .node-branch { font-size: 11px; color: #9a3412; }
 .node-row.selected .node-branch { color: #ffedd5; }
 .node-src {
   font-size: 10px; color: #6b7280; background: #eef2ff; padding: 0 4px; border-radius: 3px;
-  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .node-row.selected .node-src { background: #1e40af; color: #dbeafe; }
 
-/* center: source inspector */
-#sourcePanel { flex: 1; overflow: auto; padding: 16px 20px; background: #fff; }
+/* center: source inspector / graph */
+#sourcePanel { flex: 1; overflow: auto; padding: 16px 20px; background: #fff; position: relative; }
 #sourceView h3 { margin: 0 0 12px; color: #111827; font-size: 15px; }
+#sourceView { height: 100%; }
 #sourceBody h4 { margin: 0 0 8px; font-size: 16px; color: #111827; }
 .src-kind {
   display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
@@ -62,18 +68,27 @@ main { flex: 1; display: flex; min-height: 0; }
 .src-loc a { color: #2563eb; text-decoration: none; }
 .src-loc a:hover { text-decoration: underline; }
 .src-quote { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 4px; font-size: 12px; color: #1e293b; }
-.src-box-note { color: #b91c1c; font-size: 13px; }
 .src-branch { margin-top: 8px; font-size: 13px; color: #9a3412; font-weight: 600; }
 
-/* right: graph */
+/* flowchart mode: graph fills center, source floats as overlay */
+#cy { position: absolute; inset: 0; }
+body.mode-flowchart #sourceView { display: none; }
+body.mode-flowchart #cy { position: relative; width: 100%; height: 100%; }
+#flowOverlay {
+  display: none; position: absolute; right: 16px; bottom: 16px; width: 360px; max-height: 70%;
+  overflow: auto; background: #fff; border: 1px solid #d2d6dc; border-radius: 8px; padding: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18); z-index: 10;
+}
+#flowOverlay.show { display: block; }
+.flow-hint { color: #52606d; padding: 20px; text-align: center; }
+
+/* right: graph (anatomy mode) */
 #graphPanel {
   width: 340px; min-width: 240px; border-left: 1px solid #d2d6dc; position: relative; background: #f8fafc;
 }
 #graphPanel.collapsed { width: 0; min-width: 0; border: none; overflow: hidden; }
-#cy { position: absolute; inset: 0; }
 .graph-fallback { padding: 16px; color: #52606d; }
 
-/* tree node color hints (left) */
 .node-row.kind-decision .node-icon { color: #d97706; }
 .node-row.kind-entry .node-icon, .node-row.kind-exit .node-icon { color: #1d4ed8; }
 .node-row.kind-io .node-icon { color: #16a085; }

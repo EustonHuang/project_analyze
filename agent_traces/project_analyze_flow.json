@@ -1,0 +1,393 @@
+{
+  "meta": {
+    "kind": "project_anatomy",
+    "project": "project_analyze",
+    "standard_version": "v0.8",
+    "note": "architecture/003 的 Agent 工作流在 project_analyze 上的实例化；每个节点 source 锚定到本项目具体文件 + 行号。",
+    "created_at": "2026-10-17"
+  },
+  "phases": [
+    {
+      "id": "P0",
+      "name": "本项目导出的 skills",
+      "kind": "parallel",
+      "required": false,
+      "source": {
+        "type": "file",
+        "path": ".codebuddy/skills/agent-trace/SKILL.md",
+        "line_start": 1,
+        "line_end": 4,
+        "quote": "name: agent-trace / 采集并产出 Agent 项目追踪的 trace JSON"
+      },
+      "nodes": [
+        {
+          "id": "s1",
+          "kind": "step",
+          "label": "agent-trace（采集侧）",
+          "detail": "产出结构化 trace JSON，落盘 agent_traces/；不启动服务、不渲染",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 1,
+            "line_end": 4,
+            "quote": "name: agent-trace / 采集并产出 Agent 项目追踪的 trace JSON（养料文件）"
+          },
+          "children": []
+        },
+        {
+          "id": "s2",
+          "kind": "step",
+          "label": "agent-trace-view（渲染侧）",
+          "detail": "启动前后端 viewer，渲染 agent_traces/ 下的 trace JSON",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
+            "line_start": 1,
+            "line_end": 4,
+            "quote": "name: agent-trace-view / 启动前后端 viewer 渲染 agent_traces/ 下的 trace JSON"
+          },
+          "children": []
+        },
+        {
+          "id": "s3",
+          "kind": "step",
+          "label": "register-custom-feature（管理侧）",
+          "detail": "在 custom_categories.json 注册项目自定义记录类别，并创建受管子目录",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/register-custom-feature/SKILL.md",
+            "line_start": 1,
+            "line_end": 9,
+            "quote": "Register a project-specific custom feature into custom_categories.json"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "name": "会话启动与守门",
+      "kind": "sequence",
+      "required": true,
+      "source": {
+        "type": "file",
+        "path": ".codebuddy/settings.json",
+        "line_start": 3,
+        "line_end": 13,
+        "quote": "UserPromptSubmit -> turn_gate.py begin"
+      },
+      "nodes": [
+        {
+          "id": "n1",
+          "kind": "entry",
+          "label": "接收用户 query（UserPromptSubmit → turn_gate begin）",
+          "detail": "会话开始，hook 记录本轮基线",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/settings.json",
+            "line_start": 3,
+            "line_end": 13,
+            "quote": "UserPromptSubmit -> turn_gate.py begin"
+          },
+          "children": ["n2"]
+        },
+        {
+          "id": "n2",
+          "kind": "step",
+          "label": "注入 workspace rule（RULE.mdc 自动注入）",
+          "detail": "新会话开始自动注入 ai-project-standard 规则",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/rules/ai-project-standard/RULE.mdc",
+            "line_start": 8,
+            "line_end": 18,
+            "quote": "本规则在新会话开始自动注入"
+          },
+          "children": ["n3"]
+        },
+        {
+          "id": "n3",
+          "kind": "decision",
+          "label": "本轮是否改动受管文件？",
+          "detail": "302 条件判断：是否触碰受管文件",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/rules/ai-project-standard/RULE.mdc",
+            "line_start": 11,
+            "line_end": 16,
+            "quote": "受管文件（任何改动必须留痕）"
+          },
+          "yes_branch": "n4",
+          "no_branch": "n5"
+        },
+        {
+          "id": "n4",
+          "kind": "step",
+          "label": "进入 history 强制门（Stop → turn_gate end）",
+          "detail": "若改了受管文件却没写 history，会话结束被阻断",
+          "source": {
+            "type": "file",
+            "path": ".plan-standard/scripts/turn_gate.py",
+            "line_start": 5,
+            "line_end": 9,
+            "quote": "Stop -> end (hard gate: if this turn touched plan files, a new history event MUST cover them, else exit 2)"
+          },
+          "children": ["n5"]
+        },
+        {
+          "id": "n5",
+          "kind": "step",
+          "label": "解析用户意图：trace 本项目",
+          "detail": "识别到用户要 trace 本项目的请求",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 9,
+            "line_end": 12,
+            "quote": "用户想理解某个 agent / skill / 会话的执行过程"
+          },
+          "children": ["n10"]
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "采集侧：agent-trace 生成 trace",
+      "kind": "sequence",
+      "required": true,
+      "source": {
+        "type": "file",
+        "path": ".codebuddy/skills/agent-trace/SKILL.md",
+        "line_start": 34,
+        "line_end": 40,
+        "quote": "步骤 1. 确定模型：系统工作流用 agent_system_workflow"
+      },
+      "nodes": [
+        {
+          "id": "n10",
+          "kind": "step",
+          "label": "确定模型并列出 phases/nodes",
+          "detail": "按 workflow 模型组织 trace 结构",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 34,
+            "line_end": 40,
+            "quote": "步骤 1. 确定模型：系统工作流用 agent_system_workflow"
+          },
+          "children": ["n11"]
+        },
+        {
+          "id": "n11",
+          "kind": "decision",
+          "label": "用户是否显式调用 skill？",
+          "detail": "302 条件判断：是否点名某 skill",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 9,
+            "line_end": 11,
+            "quote": "用户说“trace 一下 X”“记录这次运行”"
+          },
+          "yes_branch": "n12",
+          "no_branch": "n15"
+        },
+        {
+          "id": "n12",
+          "kind": "step",
+          "label": "扫描可用 skill 列表（.codebuddy/skills/）",
+          "detail": "枚举本项目导出的 skills（agent-trace / agent-trace-view / register-custom-feature）",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 2,
+            "line_end": 3,
+            "quote": "采集并产出 Agent 项目追踪的 trace JSON（养料文件）"
+          },
+          "children": ["n13"]
+        },
+        {
+          "id": "n13",
+          "kind": "step",
+          "label": "调用 use_skill 加载 agent-trace 指令",
+          "detail": "注入采集侧 SKILL.md 的步骤",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 34,
+            "line_end": 40,
+            "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
+          },
+          "children": ["n14"]
+        },
+        {
+          "id": "n14",
+          "kind": "step",
+          "label": "实例化 003 工作流：扫 rules/hooks/工具",
+          "detail": "把 003 的 categories 映射到本项目具体文件",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/rules/ai-project-standard/RULE.mdc",
+            "line_start": 11,
+            "line_end": 12,
+            "quote": "受管文件（任何改动必须留痕）"
+          },
+          "children": ["n20"]
+        },
+        {
+          "id": "n15",
+          "kind": "step",
+          "label": "隐式匹配 skill 意图",
+          "detail": "未显式调用时，按语义匹配",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace/SKILL.md",
+            "line_start": 2,
+            "line_end": 3,
+            "quote": "采集并产出 Agent 项目追踪的 trace JSON"
+          },
+          "children": ["n16"]
+        },
+        {
+          "id": "n16",
+          "kind": "decision",
+          "label": "是否有 skill 匹配意图？",
+          "detail": "302 条件判断：是否需要渲染/查看",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
+            "line_start": 2,
+            "line_end": 3,
+            "quote": "渲染 agent_traces/ 下的 trace JSON"
+          },
+          "yes_branch": "n12",
+          "no_branch": "n14"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "渲染侧：agent-trace-view 展示",
+      "kind": "sequence",
+      "required": true,
+      "source": {
+        "type": "file",
+        "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
+        "line_start": 9,
+        "line_end": 14,
+        "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765"
+      },
+      "nodes": [
+        {
+          "id": "n20",
+          "kind": "step",
+          "label": "启动 viewer 服务（server.py 后台守护）",
+          "detail": "读取 agent_traces/ 下 JSON，提供 /api/traces",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace-view/server/server.py",
+            "line_start": 1,
+            "line_end": 12,
+            "quote": "Tiny stdlib server... Serves the static frontend from ../web and a small JSON API over the trace directory"
+          },
+          "children": ["n21"]
+        },
+        {
+          "id": "n21",
+          "kind": "step",
+          "label": "前端渲染三栏 + Source Inspector",
+          "detail": "选中节点展示来源（file 类型含 path+行号，可点击在 IDE 打开）",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
+            "line_start": 17,
+            "line_end": 22,
+            "quote": "中间 Source Inspector：选中节点时直接展示来源——file 类型显示 path + 行号区间"
+          },
+          "children": ["n25"]
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "受管记录与收尾",
+      "kind": "sequence",
+      "required": true,
+      "source": {
+        "type": "file",
+        "path": ".plan-standard/scripts/append_history.py",
+        "line_start": 30,
+        "line_end": 42,
+        "quote": "append --plan DIR --event E.json"
+      },
+      "nodes": [
+        {
+          "id": "n25",
+          "kind": "decision",
+          "label": "本轮是否改了受管文件？",
+          "detail": "302 条件判断：是否需要留痕",
+          "source": {
+            "type": "file",
+            "path": ".plan-standard/scripts/turn_gate.py",
+            "line_start": 5,
+            "line_end": 9,
+            "quote": "Stop -> end (hard gate... exit 2)"
+          },
+          "yes_branch": "n26",
+          "no_branch": "n29"
+        },
+        {
+          "id": "n26",
+          "kind": "step",
+          "label": "写入 history 事件（append_history.py append）",
+          "detail": "双录：提问进 questions/，改进进 improvements/，设计进 architecture/",
+          "source": {
+            "type": "file",
+            "path": ".plan-standard/scripts/append_history.py",
+            "line_start": 30,
+            "line_end": 42,
+            "quote": "append --plan DIR --event E.json"
+          },
+          "children": ["n27"]
+        },
+        {
+          "id": "n27",
+          "kind": "step",
+          "label": "重建索引与 TOC（自动）",
+          "detail": "append/set-implemented 自动刷新 *_index.json 与 *_TOC.md",
+          "source": {
+            "type": "file",
+            "path": ".plan-standard/scripts/append_history.py",
+            "line_start": 19,
+            "line_end": 21,
+            "quote": "Four auto-generated TOCs via gen-toc; append/set-implemented refresh the relevant TOC automatically"
+          },
+          "children": ["n29"]
+        },
+        {
+          "id": "n29",
+          "kind": "exit",
+          "label": "结束本轮（Stop → turn_gate end 放行）",
+          "detail": "守门通过，会话结束",
+          "source": {
+            "type": "file",
+            "path": ".codebuddy/settings.json",
+            "line_start": 26,
+            "line_end": 36,
+            "quote": "Stop -> turn_gate.py end"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "conditions": [
+    { "id": "C1", "question": "本轮是否改动受管文件？", "kind": "rule_presence", "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
+    { "id": "C2", "question": "用户是否显式调用 skill？", "kind": "skill_invocation", "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 9, "line_end": 11, "quote": "用户说“trace 一下 X”" } },
+    { "id": "C3", "question": "是否有 skill 匹配意图？", "kind": "skill_match", "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/SKILL.md", "line_start": 2, "line_end": 3, "quote": "渲染 agent_traces/ 下的 trace JSON" } },
+    { "id": "C4", "question": "是否需继续调用工具/留痕？", "kind": "loop_control", "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 5, "line_end": 9, "quote": "Stop -> end (hard gate... exit 2)" } }
+  ],
+  "assumptions": [
+    { "id": "A1", "statement": "project_analyze 当前无 project-level memories 文件；memories 机制由框架注入，未在本 trace 单列节点。", "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 12, "quote": "受管文件（任何改动必须留痕）" } }
+  ]
+}

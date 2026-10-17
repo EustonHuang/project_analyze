@@ -1,6 +1,6 @@
 {
-  "max_id": 34,
-  "revision": 34,
+  "max_id": 40,
+  "revision": 40,
   "briefs": [
     {
       "event_id": 1,
@@ -375,6 +375,72 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/034.json"
+    },
+    {
+      "event_id": 35,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T13:04:13.568306+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/005.md，定义 project_analyze 项目本体追踪方案，聚焦 skills/rules/数据流，不再描述通用 Agent 工作流。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/035.json"
+    },
+    {
+      "event_id": 36,
+      "event_type": "issue_recorded",
+      "recorded_at": "2026-10-17T13:08:32.498413+08:00",
+      "actor_type": "ai",
+      "change_summary": "记录 viewer 缺口：节点 ID 显示、双模式切换、phase 展开折叠，并写入 005 验收标准。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/036.json"
+    },
+    {
+      "event_id": 37,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T13:18:18.429735+08:00",
+      "actor_type": "ai",
+      "change_summary": "重写 005：删除手填项目解剖，仅定义方法与 viewer 交互要求；项目解剖改由 agent-trace skill 跑出后落盘 project_analyze_flow.json。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/037.json"
+    },
+    {
+      "event_id": 38,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T13:20:52.457840+08:00",
+      "actor_type": "ai",
+      "change_summary": "采集方式改为通用发现式，去掉 architecture/.plan-standard/ 显式采集目标。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/038.json"
+    },
+    {
+      "event_id": 39,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T13:31:58.851477+08:00",
+      "actor_type": "ai",
+      "change_summary": "重写 005：项目 trace 是 003 Agent 工作流在 project_analyze 上的实例化；003 定义类别，005 定位具体文件。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/039.json"
+    },
+    {
+      "event_id": 40,
+      "event_type": "plan_implemented",
+      "recorded_at": "2026-10-17T13:41:43.956762+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 005：项目本体 trace（实例化 003）+ viewer 节点 ID/双模式/展开折叠。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/040.json"
     }
   ]
 }

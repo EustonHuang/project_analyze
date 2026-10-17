@@ -1,0 +1,35 @@
+{
+  "schema_version": "2.0",
+  "event_type": "issue_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户 review 004 viewer 实现后指出三个缺口：1) 左侧节点列表未显示节点 ID，读者无法快速定位分支目标；2) viewer 只有一种 phase/list 模式，缺少传统流程图（带箭头）模式；3) 真正的展开/折叠未实现，只有左右栏折叠。已将三点并入 architecture/005.md 的 Viewer 交互要求。"
+  },
+  "source": {
+    "user_prompt": "然后对于n4 n5 n6 n7你告诉我读者能很快定位到为止吗？... 然后你能不能定义两种模式... 还有，你并没有实现 “展开”和“合并”的操作，请记录",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/005.md"
+    ],
+    "change_summary": "记录 viewer 缺口：节点 ID 显示、双模式切换、phase 展开折叠，并写入 005 验收标准。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 36,
+  "recorded_at": "2026-10-17T13:08:32.498413+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "12e9a917a67b9b2d80c9a32f450c677ceaa3201f43f56c4ee94762d85afcbc91",
+    "plan_md_line_count": 152,
+    "source_doc": "architecture/005.md"
+  }
+}

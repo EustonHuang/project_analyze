@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户质疑为何显式采集 architecture/ 与 .plan-standard/。修正 005：删除硬编码目录清单，改为通用发现式采集（扫描 skills/rules/hooks 与受管目录的数据流），避免 skill 写死目录、避免采集目标项目自身的架构文档造成循环引用。"
+  },
+  "source": {
+    "user_prompt": "采集项目为什么要显式指明采集architecture .plan-standard/ ?????",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/005.md"
+    ],
+    "change_summary": "采集方式改为通用发现式，去掉 architecture/.plan-standard/ 显式采集目标。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "error": "在 005 方法中把 architecture/、.plan-standard/ 硬编码为采集目录，导致 skill 写死且循环引用。",
+    "fix": "改为通用发现式采集，不绑定具体目录，且不采集目标项目自身架构文档。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 38,
+  "recorded_at": "2026-10-17T13:20:52.457840+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "72c5529b93c7c74f15c4e2e04ce9089db53dee66c7eed05468d5745fd0ed9faf",
+    "plan_md_line_count": 78,
+    "source_doc": "architecture/005.md"
+  }
+}

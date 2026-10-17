@@ -38,3 +38,9 @@
 - [032 · plan_modified · 2026-10-17T12:30:15](history/032.json) — 落地 003：采集侧支持 agent_system_workflow 模型（强制 source + decision 分支），产出具体系统工作流 trace；渲染侧按形状映射表渲染全节点类型并展示来源。
 - [033 · plan_modified · 2026-10-17T12:41:47](history/033.json) — 新增 architecture/004.md，定义来源可追溯性（file 类型必须含 path+line_start+line_end+quote；system_prompt 类型必须含 section+quote；禁止 inferred）与 viewer 三栏可折叠布局。
 - [034 · plan_modified · 2026-10-17T12:52:21](history/034.json) — 落地 004：来源可追溯（file 行号 / system_prompt section，零 inferred），viewer 三栏可折叠且来源居中可见。
+- [035 · plan_modified · 2026-10-17T13:04:13](history/035.json) — 新增 architecture/005.md，定义 project_analyze 项目本体追踪方案，聚焦 skills/rules/数据流，不再描述通用 Agent 工作流。
+- [036 · issue_recorded · 2026-10-17T13:08:32](history/036.json) — 记录 viewer 缺口：节点 ID 显示、双模式切换、phase 展开折叠，并写入 005 验收标准。
+- [037 · plan_modified · 2026-10-17T13:18:18](history/037.json) — 重写 005：删除手填项目解剖，仅定义方法与 viewer 交互要求；项目解剖改由 agent-trace skill 跑出后落盘 project_analyze_flow.json。
+- [038 · plan_modified · 2026-10-17T13:20:52](history/038.json) — 采集方式改为通用发现式，去掉 architecture/.plan-standard/ 显式采集目标。
+- [039 · plan_modified · 2026-10-17T13:31:58](history/039.json) — 重写 005：项目 trace 是 003 Agent 工作流在 project_analyze 上的实例化；003 定义类别，005 定位具体文件。
+- [040 · plan_implemented · 2026-10-17T13:41:43](history/040.json) — 落地 005：项目本体 trace（实例化 003）+ viewer 节点 ID/双模式/展开折叠。

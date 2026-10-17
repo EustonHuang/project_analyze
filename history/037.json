@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户指出 architecture/005.md 手填了项目解剖内容（skills/rules/目录计数），这应由 agent-trace skill 跑本项目产出，而非人工枚举。重写 005：删除手填的项目事实，仅保留方法（用 skill 跑本项目产出 project_analyze_flow.json）与 viewer 要求（节点 ID、双模式、展开折叠）。"
+  },
+  "source": {
+    "user_prompt": "项目本体信息 你写这个的意义是什么？这个难道不是你需要用skill跑出来，然后呈现出来的吗？？？你直接写在architecture里面几个意思？？？不用skill跑出来的项目信息你觉得有价值吗？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/005.md"
+    ],
+    "change_summary": "重写 005：删除手填项目解剖，仅定义方法与 viewer 交互要求；项目解剖改由 agent-trace skill 跑出后落盘 project_analyze_flow.json。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "error": "在 architecture 文档中手填项目解剖内容，与“由 skill 产出”相违背。",
+    "fix": "architecture 仅定义方法，真实项目解剖由 agent-trace 运行产出。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 37,
+  "recorded_at": "2026-10-17T13:18:18.429735+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "f5a154ad0abbee17b25e2bc28e817bbceb97a7642ef06d20701ba01c614f60e0",
+    "plan_md_line_count": 70,
+    "source_doc": "architecture/005.md"
+  }
+}
