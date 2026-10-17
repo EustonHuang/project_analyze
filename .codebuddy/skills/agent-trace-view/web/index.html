@@ -6,18 +6,17 @@
   <title>Agent Trace Viewer</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 </head>
 <body>
   <header>
     <button id="toggleTree" title="收起/展开左侧导航">☰</button>
     <select id="traceSelect"><option>加载中...</option></select>
-    <label>depth <input type="range" id="depth" min="1" max="6" value="6" /><span id="depthVal">6</span></label>
     <label><input type="checkbox" id="showDecisions" /> 只看决策</label>
     <label><input type="checkbox" id="showSources" checked /> 显示来源路径</label>
     <input id="search" placeholder="搜索节点..." />
     <button id="reload">刷新</button>
-    <button id="toggleMode" title="切换解剖视图 / 流程图">流程图</button>
-    <button id="toggleGraph" title="收起/展开右侧图视图">图</button>
+    <button id="toggleGraph" title="打开/关闭流程图覆盖层">流程图</button>
   </header>
   <main>
     <section id="treePanel">
@@ -29,10 +28,24 @@
         <div id="sourceBody">在左侧选择一个节点，查看它的来源与引用。</div>
       </div>
     </section>
-    <section id="graphPanel">
-      <div id="cy"></div>
+    <section id="filePanel">
+      <div id="fileHead">
+        <span id="fileTitle">文件查看器</span>
+        <span id="fileToggle" class="hidden">
+          <button id="mdRaw" class="md-btn active">Raw</button>
+          <button id="mdRendered" class="md-btn">Rendered</button>
+        </span>
+      </div>
+      <div id="fileBody">选中节点后在此显示整个来源文件。</div>
     </section>
   </main>
+  <div id="graphOverlay">
+    <div id="graphBar">
+      <span>流程图</span>
+      <button id="closeGraph">✕ 关闭 (Esc)</button>
+    </div>
+    <div id="cy"></div>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>

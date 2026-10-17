@@ -44,3 +44,5 @@
 - [038 · plan_modified · 2026-10-17T13:20:52](history/038.json) — 采集方式改为通用发现式，去掉 architecture/.plan-standard/ 显式采集目标。
 - [039 · plan_modified · 2026-10-17T13:31:58](history/039.json) — 重写 005：项目 trace 是 003 Agent 工作流在 project_analyze 上的实例化；003 定义类别，005 定位具体文件。
 - [040 · plan_implemented · 2026-10-17T13:41:43](history/040.json) — 落地 005：项目本体 trace（实例化 003）+ viewer 节点 ID/双模式/展开折叠。
+- [041 · plan_modified · 2026-10-17T00:00:00](history/041.json) — 新建 architecture/006：viewer 三栏文件视图与流程图修复方案。
+- [042 · plan_implemented · 2026-10-17T00:00:00](history/042.json) — 落地 006：viewer 三栏 + 全文件查看器 + 流程图覆盖层 + 阶段编号 1 起。

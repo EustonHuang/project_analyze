@@ -2,9 +2,16 @@
 
 let current = null;
 let selectedId = null;
-let mode = (new URLSearchParams(location.search).get("mode") === "flowchart") ? "flowchart" : "anatomy";
+let fileCache = null;      // { path, content, start, end, isMd }
+let fileMode = "raw";      // raw | rendered
 
 const api = (p) => fetch(p).then((r) => r.json());
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 function debounce(fn, ms) {
   let t;
@@ -12,7 +19,6 @@ function debounce(fn, ms) {
 }
 function params() {
   const p = new URLSearchParams();
-  p.set("depth", document.getElementById("depth").value);
   if (document.getElementById("showDecisions").checked) p.set("kinds", "decision");
   const q = document.getElementById("search").value.trim();
   if (q) p.set("q", q);
@@ -64,40 +70,11 @@ function buildGraph(data) {
   return { nodes, edges, roots };
 }
 
-// ---- mode handling -------------------------------------------------------
-function setMode(m) {
-  mode = m;
-  const u = new URLSearchParams(location.search);
-  if (m === "flowchart") u.set("mode", "flowchart"); else u.delete("mode");
-  history.replaceState(null, "", "?" + u.toString());
-  document.body.classList.toggle("mode-flowchart", m === "flowchart");
-  document.getElementById("toggleMode").textContent = (m === "flowchart") ? "解剖视图" : "流程图";
-  if (current) render(buildGraph(current));
-}
-
-function mountCy() {
-  const cy = document.getElementById("cy");
-  if (mode === "flowchart") {
-    const sp = document.getElementById("sourcePanel");
-    sp.insertBefore(cy, document.getElementById("sourceView"));
-  } else {
-    document.getElementById("graphPanel").appendChild(cy);
-  }
-}
-
 function render(g) {
-  renderNav(g);
   if (!g) return;
-  if (mode === "anatomy") {
-    document.getElementById("graphPanel").classList.add("collapsed");
-    renderSource(g, selectedId, document.getElementById("sourceBody"));
-    renderGraph(g);
-  } else {
-    document.getElementById("graphPanel").classList.add("collapsed");
-    renderGraph(g);
-    if (selectedId) renderSource(g, selectedId, document.getElementById("flowOverlay"));
-    else document.getElementById("flowOverlay").innerHTML = '<div class="flow-hint">点击节点查看来源</div>';
-  }
+  renderNav(g);
+  const n = selectedId && g.nodes[selectedId];
+  if (n) select(n, false);
 }
 
 // ---- left: Phase Navigator (flat, grouped, collapsible) -------------------
@@ -108,7 +85,7 @@ function renderNav(g) {
   const term = document.getElementById("search").value.trim().toLowerCase();
   const phases = current.phases || [{ id: "_", name: "流程", nodes: Object.values(g.nodes) }];
 
-  phases.forEach((ph) => {
+  phases.forEach((ph, pi) => {
     const visible = (ph.nodes || []).filter((n) => {
       if (showDec && n.kind !== "decision") return false;
       if (term && !JSON.stringify(n).toLowerCase().includes(term)) return false;
@@ -127,7 +104,7 @@ function renderNav(g) {
     head.appendChild(badge);
     const title = document.createElement("span");
     title.className = "phase-title";
-    title.textContent = (ph.id ? ph.id + " · " : "") + ph.name;
+    title.textContent = "P" + (pi + 1) + " · " + (ph.name || ph.id || "");
     head.appendChild(title);
     head.onclick = () => block.classList.toggle("collapsed");
     block.appendChild(head);
@@ -157,12 +134,7 @@ function renderNav(g) {
         sp.className = "node-src"; sp.textContent = n.source.path;
         row.appendChild(sp);
       }
-      row.onclick = () => {
-        selectedId = n.id;
-        document.querySelectorAll(".node-row.selected").forEach((el) => el.classList.remove("selected"));
-        row.classList.add("selected");
-        renderSource(g, n.id, mode === "flowchart" ? document.getElementById("flowOverlay") : document.getElementById("sourceBody"));
-      };
+      row.onclick = () => select(n, true);
       list.appendChild(row);
     });
     block.appendChild(list);
@@ -170,22 +142,21 @@ function renderNav(g) {
   });
 }
 
-// ---- source inspector -----------------------------------------------------
-function renderSource(g, id, target) {
-  if (!target) return;
+// ---- selection: source inspector + file viewer ----------------------------
+function select(n, scrollNav) {
+  selectedId = n.id;
+  document.querySelectorAll(".node-row.selected").forEach((el) => el.classList.remove("selected"));
+  document.querySelectorAll(".node-row").forEach((el) => {
+    const idEl = el.querySelector(".node-id");
+    if (idEl && idEl.textContent === n.id) el.classList.add("selected");
+  });
+  renderSource(n);
+  showFile(n);
+}
+
+function renderSource(n) {
+  const target = document.getElementById("sourceBody");
   target.innerHTML = "";
-  if (!id || !g.nodes[id]) {
-    const h = document.createElement("h4"); h.textContent = "概览";
-    target.appendChild(h);
-    const m = document.createElement("div"); m.className = "src-detail";
-    m.textContent = "节点数：" + Object.keys(g.nodes).length +
-      "　决策数：" + Object.values(g.nodes).filter((n) => n.kind === "decision").length +
-      "　条件数：" + ((current.conditions || []).length) +
-      "　假设数：" + ((current.assumptions || []).length);
-    target.appendChild(m);
-    return;
-  }
-  const n = g.nodes[id];
   const kind = document.createElement("div");
   kind.className = "src-kind kind-" + (n.kind || "step");
   kind.textContent = (SHAPE_ICON[n.kind] || "▭") + " " + (n.kind || "step") + "  [" + n.id + "]";
@@ -203,7 +174,7 @@ function renderSource(g, id, target) {
       const loc = document.createElement("div"); loc.className = "src-loc";
       const abs = src.path.startsWith("/") ? src.path : "/Users/euston/personal/project_analyze/" + src.path;
       loc.innerHTML = '<a href="vscode://file/' + abs + ":" + src.line_start + '" title="在 IDE 打开">' +
-        src.path + " : " + src.line_start + "-" + src.line_end + "</a>";
+        esc(src.path) + " : " + src.line_start + "-" + src.line_end + "</a>";
       box.appendChild(loc);
     } else if (src.type === "system_prompt") {
       const sec = document.createElement("div"); sec.className = "src-loc";
@@ -219,7 +190,88 @@ function renderSource(g, id, target) {
   }
 }
 
-// ---- graph ---------------------------------------------------------------
+// ---- right: File Viewer (whole file, line numbers, target highlight) ------
+async function showFile(n) {
+  const body = document.getElementById("fileBody");
+  const head = document.getElementById("fileTitle");
+  const toggle = document.getElementById("fileToggle");
+  const src = n && n.source;
+  fileCache = null;
+  toggle.classList.add("hidden");
+  setMdButtons("raw");
+
+  if (!src) {
+    head.textContent = "文件查看器";
+    body.innerHTML = '<div class="file-hint">该节点无来源。</div>';
+    return;
+  }
+  if (src.type !== "file") {
+    head.textContent = "system_prompt 来源";
+    body.innerHTML = '<div class="src-box"><div class="src-box-head">section</div>' +
+      '<div class="src-detail">' + esc(src.section || "") + "</div>" +
+      (src.quote ? '<pre class="src-quote">' + esc(src.quote) + "</pre>" : "") + "</div>";
+    return;
+  }
+
+  head.textContent = src.path + " : " + (src.line_start || "?") + "-" + (src.line_end || "?");
+  body.innerHTML = '<div class="file-hint">加载中…</div>';
+  let data;
+  try {
+    const res = await fetch("/api/file?path=" + encodeURIComponent(src.path));
+    data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.status);
+  } catch (e) {
+    body.innerHTML = '<div class="file-hint">读取失败：' + esc(e.message) + "</div>";
+    return;
+  }
+  fileCache = {
+    path: src.path, content: data.content,
+    start: src.line_start || 0, end: src.line_end || 0,
+    isMd: /\.mdx?$/i.test(src.path),
+  };
+  if (fileCache.isMd) toggle.classList.remove("hidden");
+  renderFile();
+}
+
+function setMdButtons(mode) {
+  document.getElementById("mdRaw").classList.toggle("active", mode === "raw");
+  document.getElementById("mdRendered").classList.toggle("active", mode === "rendered");
+}
+
+function renderFile() {
+  if (!fileCache) return;
+  const body = document.getElementById("fileBody");
+  if (fileMode === "rendered" && fileCache.isMd) {
+    if (typeof marked === "undefined") {
+      body.innerHTML = '<div class="file-hint">marked.js（CDN）不可用，回退 Raw。</div>';
+      fileMode = "raw"; setMdButtons("raw");
+    } else {
+      body.innerHTML = '<div class="file-md">' + marked.parse(fileCache.content) + "</div>";
+      return;
+    }
+  }
+  const lines = fileCache.content.split("\n");
+  const wrap = document.createElement("div");
+  wrap.className = "file-raw";
+  lines.forEach((ln, i) => {
+    const no = i + 1;
+    const row = document.createElement("div");
+    row.className = "file-line" + (no >= fileCache.start && no <= fileCache.end ? " target" : "");
+    const noEl = document.createElement("span");
+    noEl.className = "file-no"; noEl.textContent = no;
+    const code = document.createElement("span");
+    code.className = "file-code"; code.textContent = ln === "" ? " " : ln;
+    row.append(noEl, code);
+    wrap.appendChild(row);
+  });
+  body.innerHTML = "";
+  body.appendChild(wrap);
+  const t = wrap.querySelector(".file-line.target");
+  if (t) t.scrollIntoView({ block: "center" });
+  else body.scrollTop = 0;
+}
+
+// ---- graph overlay -------------------------------------------------------
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (window.cy) { window.cy.destroy(); window.cy = null; }
@@ -266,13 +318,17 @@ function renderGraph(g) {
   });
   window.cy.on("tap", "node", (e) => {
     const n = g.nodes[e.target.id()];
-    if (n) {
-      selectedId = n.id;
-      renderNav(g);
-      renderSource(g, n.id, mode === "flowchart" ? document.getElementById("flowOverlay") : document.getElementById("sourceBody"));
-      if (mode === "flowchart") document.getElementById("flowOverlay").classList.add("show");
-    }
+    if (n) select(n, true);
   });
+}
+
+function openGraph() {
+  if (!current) return;
+  document.getElementById("graphOverlay").classList.add("open");
+  renderGraph(buildGraph(current));
+}
+function closeGraph() {
+  document.getElementById("graphOverlay").classList.remove("open");
 }
 
 // ---- load ----------------------------------------------------------------
@@ -287,24 +343,30 @@ async function loadTrace() {
   const name = document.getElementById("traceSelect").value;
   if (!name) return;
   current = await api("/api/traces/" + encodeURIComponent(name) + "?" + params());
-  selectedId = ((current.phases && current.phases[0].nodes.find((n) => n.kind === "entry")) || {}).id || null;
-  mountCy();
-  render(buildGraph(current));
+  const firstEntry = current.phases && current.phases
+    .flatMap((ph) => ph.nodes || [])
+    .find((n) => n.kind === "entry");
+  selectedId = (firstEntry || {}).id || null;
+  const g = buildGraph(current);
+  renderNav(g);
+  if (selectedId && g.nodes[selectedId]) select(g.nodes[selectedId], false);
+  else render(g);
+  if (document.getElementById("graphOverlay").classList.contains("open")) renderGraph(g);
 }
 
 document.getElementById("toggleTree").onclick = () => document.getElementById("treePanel").classList.toggle("collapsed");
 document.getElementById("toggleGraph").onclick = () => {
-  const gp = document.getElementById("graphPanel");
-  gp.classList.toggle("collapsed");
-  if (!gp.classList.contains("collapsed") && current && mode === "anatomy") renderGraph(buildGraph(current));
+  const ov = document.getElementById("graphOverlay");
+  if (ov.classList.contains("open")) closeGraph(); else openGraph();
 };
-document.getElementById("toggleMode").onclick = () => setMode(mode === "anatomy" ? "flowchart" : "anatomy");
+document.getElementById("closeGraph").onclick = closeGraph;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGraph(); });
+document.getElementById("mdRaw").onclick = () => { fileMode = "raw"; setMdButtons("raw"); renderFile(); };
+document.getElementById("mdRendered").onclick = () => { fileMode = "rendered"; setMdButtons("rendered"); renderFile(); };
 document.getElementById("traceSelect").onchange = loadTrace;
 document.getElementById("reload").onclick = loadTrace;
-document.getElementById("depth").oninput = (e) => { document.getElementById("depthVal").textContent = e.target.value; loadTrace(); };
-document.getElementById("showDecisions").onchange = loadTrace;
-document.getElementById("showSources").onchange = loadTrace;
-document.getElementById("search").oninput = debounce(loadTrace, 300);
+document.getElementById("showDecisions").onchange = () => { renderNav(buildGraph(current || { nodes: {} })); };
+document.getElementById("showSources").onchange = () => { renderNav(buildGraph(current || { nodes: {} })); };
+document.getElementById("search").oninput = debounce(() => { renderNav(buildGraph(current || { nodes: {} })); }, 300);
 
-setMode(mode);
 loadList();

@@ -1,6 +1,6 @@
 {
-  "max_id": 40,
-  "revision": 40,
+  "max_id": 42,
+  "revision": 42,
   "briefs": [
     {
       "event_id": 1,
@@ -441,6 +441,28 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/040.json"
+    },
+    {
+      "event_id": 41,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T00:00:00+08:00",
+      "actor_type": "ai",
+      "change_summary": "新建 architecture/006：viewer 三栏文件视图与流程图修复方案。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/041.json"
+    },
+    {
+      "event_id": 42,
+      "event_type": "plan_implemented",
+      "recorded_at": "2026-10-17T00:00:00+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 006：viewer 三栏 + 全文件查看器 + 流程图覆盖层 + 阶段编号 1 起。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/042.json"
     }
   ]
 }

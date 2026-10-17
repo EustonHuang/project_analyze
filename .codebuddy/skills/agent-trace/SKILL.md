@@ -33,7 +33,7 @@ description: 采集并产出 Agent 项目追踪的 trace JSON（养料文件）�
 
 ## 步骤
 1. 确定模型：系统工作流用 `agent_system_workflow`；单次运行用 `prompt_trace`。
-2. 列阶段 `phases[]`，每阶段内按逻辑顺序列 `nodes[]`。
+2. 列阶段 `phases[]`，每阶段内按逻辑顺序列 `nodes[]`；阶段 id 从 `P1` 起编号（不用 P0）。
 3. 每个「是否……」写成 `decision` 节点，带 `yes_branch` / `no_branch`；其余动作为 `step` / `entry` / `exit` / `io` / `parallel` / `loop`。
 4. 为每个节点填 `source.type` / `source.path` / `source.quote`（引用具体规则 / skill / 系统提示段落）。
 5. 写完后跑 `scripts/validate.py` 校验（workflow 模型强制 source 与 decision 分支）。

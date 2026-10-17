@@ -8,7 +8,7 @@
   },
   "phases": [
     {
-      "id": "P0",
+      "id": "P1",
       "name": "本项目导出的 skills",
       "kind": "parallel",
       "required": false,
@@ -65,7 +65,7 @@
       ]
     },
     {
-      "id": "P1",
+      "id": "P2",
       "name": "会话启动与守门",
       "kind": "sequence",
       "required": true,
@@ -151,7 +151,7 @@
       ]
     },
     {
-      "id": "P2",
+      "id": "P3",
       "name": "采集侧：agent-trace 生成 trace",
       "kind": "sequence",
       "required": true,
@@ -266,7 +266,7 @@
       ]
     },
     {
-      "id": "P3",
+      "id": "P4",
       "name": "渲染侧：agent-trace-view 展示",
       "kind": "sequence",
       "required": true,
@@ -309,7 +309,7 @@
       ]
     },
     {
-      "id": "P4",
+      "id": "P5",
       "name": "受管记录与收尾",
       "kind": "sequence",
       "required": true,

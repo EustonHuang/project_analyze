@@ -81,7 +81,36 @@ class Handler(SimpleHTTPRequestHandler):
             return
         super().do_GET()
 
+    def api_file(self, query):
+        q = urllib.parse.parse_qs(query)
+        rel = q.get("path", [""])[0]
+        if not rel:
+            self._json(400, {"error": "missing path"})
+            return
+        root = os.path.normpath(os.getcwd())
+        if os.path.isabs(rel):
+            fp = os.path.normpath(rel)
+        else:
+            fp = os.path.normpath(os.path.join(root, rel))
+            if not fp.startswith(root + os.sep):
+                self._json(403, {"error": "path escapes project root", "path": rel})
+                return
+        if not os.path.isfile(fp):
+            self._json(404, {"error": "not found", "path": rel})
+            return
+        try:
+            with open(fp, encoding="utf-8", errors="replace") as f:
+                content = f.read()
+        except OSError as e:
+            self._json(500, {"error": str(e)})
+            return
+        self._json(200, {"path": rel, "content": content,
+                         "line_count": content.count("\n") + 1})
+
     def api(self, p):
+        if p.path == "/api/file":
+            self.api_file(p.query)
+            return
         if p.path == "/api/traces":
             try:
                 files = [f for f in os.listdir(TRACE_DIR) if f.endswith(".json")]
