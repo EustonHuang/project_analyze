@@ -31,8 +31,22 @@ def validate_node(node, path, model, ids=None):
             print(f"ERROR: {path} kind={node.get('kind')} 非法（workflow 模型）")
             ok = False
         src = node.get("source")
-        if not isinstance(src, dict) or not src.get("type") or not src.get("path"):
-            print(f"ERROR: {path} 缺少合法 source(type+path)——workflow 模型强制")
+        if not isinstance(src, dict) or not src.get("type"):
+            print(f"ERROR: {path} 缺少 source.type——workflow 模型强制")
+            ok = False
+        elif src.get("type") == "file":
+            if not src.get("path"):
+                print(f"ERROR: {path} source.type=file 缺少 path")
+                ok = False
+            if not isinstance(src.get("line_start"), int) or not isinstance(src.get("line_end"), int):
+                print(f"ERROR: {path} source.type=file 缺少 line_start/line_end（整数）")
+                ok = False
+        elif src.get("type") == "system_prompt":
+            if not src.get("section"):
+                print(f"ERROR: {path} source.type=system_prompt 缺少 section")
+                ok = False
+        else:
+            print(f"ERROR: {path} source.type={src.get('type')} 非法（仅允许 file / system_prompt，禁止 inferred）")
             ok = False
         if node.get("kind") == "decision":
             for b in ("yes_branch", "no_branch"):

@@ -9,25 +9,71 @@ header select, header input, header button {
   padding: 4px 8px; border-radius: 4px; border: 1px solid #3e4c59; background: #323f4b; color: #e4e7eb;
 }
 header button { cursor: pointer; }
+header button:hover { background: #3e4c59; }
+
 main { flex: 1; display: flex; min-height: 0; }
-#treePanel { width: 28%; overflow: auto; border-right: 1px solid #d2d6dc; padding: 8px; background: #f8fafc; }
-#graphPanel { flex: 1; position: relative; }
+
+/* left: phase navigator */
+#treePanel {
+  width: 300px; min-width: 200px; overflow: auto;
+  border-right: 1px solid #d2d6dc; background: #f8fafc; padding: 8px;
+}
+#treePanel.collapsed { width: 0; min-width: 0; padding: 0; border: none; overflow: hidden; }
+.phase-block { margin-bottom: 12px; }
+.phase-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.phase-badge {
+  font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #e5e7eb; color: #374151; text-transform: uppercase;
+}
+.phase-badge.loop { background: #ede9fe; color: #6d28d9; }
+.phase-badge.conditional { background: #fef3c7; color: #92400e; }
+.phase-title { font-weight: 600; font-size: 13px; color: #111827; }
+.phase-list { display: flex; flex-direction: column; gap: 2px; }
+.node-row {
+  display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 4px;
+  cursor: pointer; font-size: 13px; color: #374151; flex-wrap: wrap;
+}
+.node-row:hover { background: #dbeafe; }
+.node-row.selected { background: #2563eb; color: #fff; }
+.node-icon { font-size: 13px; width: 16px; text-align: center; }
+.node-label { flex: 1; }
+.node-branch { font-size: 11px; color: #9a3412; }
+.node-row.selected .node-branch { color: #ffedd5; }
+.node-src {
+  font-size: 10px; color: #6b7280; background: #eef2ff; padding: 0 4px; border-radius: 3px;
+  max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.node-row.selected .node-src { background: #1e40af; color: #dbeafe; }
+
+/* center: source inspector */
+#sourcePanel { flex: 1; overflow: auto; padding: 16px 20px; background: #fff; }
+#sourceView h3 { margin: 0 0 12px; color: #111827; font-size: 15px; }
+#sourceBody h4 { margin: 0 0 8px; font-size: 16px; color: #111827; }
+.src-kind {
+  display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: #e5e7eb; color: #374151; margin-bottom: 8px;
+}
+.src-kind.kind-decision { background: #fef3c7; color: #92400e; }
+.src-kind.kind-entry, .src-kind.kind-exit { background: #dbeafe; color: #1e40af; }
+.src-kind.kind-io { background: #ccfbf1; color: #0f766e; }
+.src-detail { color: #4b5563; font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+.src-box { background: #f8fafc; border: 1px solid #d2d6dc; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; }
+.src-box-head { font-weight: 600; color: #3730a3; margin-bottom: 6px; font-size: 13px; }
+.src-loc { font-size: 12px; margin-bottom: 6px; }
+.src-loc a { color: #2563eb; text-decoration: none; }
+.src-loc a:hover { text-decoration: underline; }
+.src-quote { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 4px; font-size: 12px; color: #1e293b; }
+.src-box-note { color: #b91c1c; font-size: 13px; }
+.src-branch { margin-top: 8px; font-size: 13px; color: #9a3412; font-weight: 600; }
+
+/* right: graph */
+#graphPanel {
+  width: 340px; min-width: 240px; border-left: 1px solid #d2d6dc; position: relative; background: #f8fafc;
+}
+#graphPanel.collapsed { width: 0; min-width: 0; border: none; overflow: hidden; }
 #cy { position: absolute; inset: 0; }
-#detail { width: 26%; border-left: 1px solid #d2d6dc; padding: 12px; overflow: auto; background: #f8fafc; }
-#tree ul { list-style: none; padding-left: 14px; margin: 4px 0; }
-#tree > ul { padding-left: 0; }
-#tree .node { cursor: pointer; display: inline-block; padding: 2px 4px; border-radius: 4px; }
-#tree .node:hover { background: #dbeafe; }
-#tree .entry, #tree .exit { color: #1d4ed8; font-weight: 600; }
-#tree .decision { color: #b45309; font-weight: 600; }
-#tree .parallel { color: #b45309; }
-#tree .loop { color: #6d28d9; }
-#tree .branch { color: #0f766e; }
-#tree .async, #tree .spawn { color: #b91c1c; }
-#tree .io { color: #0d9488; }
-#detail h3 { margin-top: 0; }
-#detail .meta { color: #52606d; font-size: 12px; margin-bottom: 6px; }
-#detail pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #d2d6dc; padding: 8px; border-radius: 4px; }
-#detail .source { background: #eef2ff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
-#detail .source-head { font-weight: 600; color: #3730a3; margin-bottom: 4px; }
-#detail .source pre { background: #fff; border-color: #c7d2fe; }
+.graph-fallback { padding: 16px; color: #52606d; }
+
+/* tree node color hints (left) */
+.node-row.kind-decision .node-icon { color: #d97706; }
+.node-row.kind-entry .node-icon, .node-row.kind-exit .node-icon { color: #1d4ed8; }
+.node-row.kind-io .node-icon { color: #16a085; }

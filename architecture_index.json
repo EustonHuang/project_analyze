@@ -1,7 +1,7 @@
 {
-  "implemented_version": 3,
-  "latest_version": 3,
-  "revision": 10,
+  "implemented_version": 4,
+  "latest_version": 4,
+  "revision": 11,
   "versions": [
     {
       "version": 1,
@@ -17,6 +17,11 @@
       "version": 3,
       "title": "Agent 自身工作流追踪方案",
       "file": "architecture/003.md"
+    },
+    {
+      "version": 4,
+      "title": "agent-trace-view 可用性与来源可追溯性改进方案",
+      "file": "architecture/004.md"
     }
   ]
 }

@@ -36,3 +36,5 @@
 - [030 · plan_modified · 2026-10-17T12:18:38](history/030.json) — 删除 003.md 中三处元描述/澄清式旁白，违反 No Meta-Descriptions 与『禁止澄清式旁白』两条 user rule。
 - [031 · qna_recorded · 2026-10-17T12:20:31](history/031.json) — 双录 Q15：规则在上下文却明知故犯的根因分析。
 - [032 · plan_modified · 2026-10-17T12:30:15](history/032.json) — 落地 003：采集侧支持 agent_system_workflow 模型（强制 source + decision 分支），产出具体系统工作流 trace；渲染侧按形状映射表渲染全节点类型并展示来源。
+- [033 · plan_modified · 2026-10-17T12:41:47](history/033.json) — 新增 architecture/004.md，定义来源可追溯性（file 类型必须含 path+line_start+line_end+quote；system_prompt 类型必须含 section+quote；禁止 inferred）与 viewer 三栏可折叠布局。
+- [034 · plan_modified · 2026-10-17T12:52:21](history/034.json) — 落地 004：来源可追溯（file 行号 / system_prompt section，零 inferred），viewer 三栏可折叠且来源居中可见。

@@ -1,0 +1,41 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "实现 architecture/004：重写 agent_system_workflow.json，所有节点来源改为具体 file(含行号) 或 system_prompt(含 section)，删除 inferred 弱节点并移入 assumptions[]；validator 强制 source 两类且 file 必含行号；viewer 改为三栏可折叠（Phase Navigator 平铺 / Source Inspector 居中 / Graph 可选），来源直接可见。"
+  },
+  "source": {
+    "user_prompt": "请implement 004",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "agent_traces/agent_system_workflow.json",
+      ".codebuddy/skills/agent-trace/scripts/validate.py",
+      ".codebuddy/skills/agent-trace/references/trace_template.md",
+      ".codebuddy/skills/agent-trace-view/web/app.js",
+      ".codebuddy/skills/agent-trace-view/web/index.html",
+      ".codebuddy/skills/agent-trace-view/web/styles.css",
+      ".codebuddy/skills/agent-trace-view/SKILL.md"
+    ],
+    "change_summary": "落地 004：来源可追溯（file 行号 / system_prompt section，零 inferred），viewer 三栏可折叠且来源居中可见。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 34,
+  "recorded_at": "2026-10-17T12:52:21.065301+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "48f2977608f0c94452fac7f093fd3d884ed589bee48faa3d9efc103128acdfad",
+    "plan_md_line_count": 78,
+    "source_doc": "architecture/004.md"
+  }
+}

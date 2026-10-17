@@ -65,10 +65,13 @@ architecture/003 定义了两种 trace 模型，向后兼容。
 
 ### 字段约束
 
-- `source`（**必填**）：`{ type, path, quote }`。缺 `type` 或 `path` 视为非法 trace。
+- `source`（**必填**）：仅允许两类，禁止 `inferred`：
+  - `type: "file"`：`{ path, line_start, line_end, quote }`——仓库内真实文件的具体行号区间。
+  - `type: "system_prompt"`：`{ section, quote }`——系统提示/工具描述的段落名 + 原文（系统提示无行号，用段落名代替）。
 - `decision` 必须声明 `yes_branch` 与 `no_branch`（指向节点 id）。
 - 顺序流用 `children` 串接；条件流用 `yes_branch` / `no_branch`。
 - 节点 id 在单个 trace 内全局唯一即可。
+- 凡无法定位到文件或系统提示原文的推断，移入顶层 `assumptions[]`，不作为事实节点。
 
 ## 模型 B：`prompt_trace`（legacy，兼容保留）
 

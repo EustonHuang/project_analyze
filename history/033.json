@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户指出 003 实现后 viewer 存在来源质量与可用性问题。按 Plan-First 停止即兴修复，撰写 architecture/004.md：来源必须追到文件行号或系统提示原文，禁止 inferred；viewer 改为三栏可折叠布局（左侧 phase navigator 平铺、中间 source inspector、右侧可选 graph）。"
+  },
+  "source": {
+    "user_prompt": "谁他妈的让你修复了！！！！！！ 你看看全局rules他妈的是怎么写的？？？？ plan-first你他妈的看到没有？ 你source写了，你他妈写了啥，你执行了一个skill你难道不写skill的地址以及skill执行的具体行数这些信息？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/004.md",
+      "architecture_index.json"
+    ],
+    "change_summary": "新增 architecture/004.md，定义来源可追溯性（file 类型必须含 path+line_start+line_end+quote；system_prompt 类型必须含 section+quote；禁止 inferred）与 viewer 三栏可折叠布局。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "error": "违反 Plan-First：用户尚未批准方案，我已回滚 prematurely 修改的 index.html，改为先写 architecture/004.md。",
+    "fix": "撰写 architecture/004.md 并等待用户批准后再 implement。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 33,
+  "recorded_at": "2026-10-17T12:41:47.605155+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "48f2977608f0c94452fac7f093fd3d884ed589bee48faa3d9efc103128acdfad",
+    "plan_md_line_count": 78,
+    "source_doc": "architecture/004.md"
+  }
+}

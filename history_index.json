@@ -1,6 +1,6 @@
 {
-  "max_id": 32,
-  "revision": 32,
+  "max_id": 34,
+  "revision": 34,
   "briefs": [
     {
       "event_id": 1,
@@ -353,6 +353,28 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/032.json"
+    },
+    {
+      "event_id": 33,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:41:47.605155+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/004.md，定义来源可追溯性（file 类型必须含 path+line_start+line_end+quote；system_prompt 类型必须含 section+quote；禁止 inferred）与 viewer 三栏可折叠布局。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/033.json"
+    },
+    {
+      "event_id": 34,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:52:21.065301+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 004：来源可追溯（file 行号 / system_prompt section，零 inferred），viewer 三栏可折叠且来源居中可见。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/034.json"
     }
   ]
 }

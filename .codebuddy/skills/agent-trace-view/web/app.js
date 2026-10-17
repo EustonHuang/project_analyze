@@ -1,6 +1,8 @@
 "use strict";
 
 let current = null;
+let selectedId = null;
+let graphReady = false;
 
 const api = (path) => fetch(path).then((r) => r.json());
 
@@ -49,9 +51,21 @@ const COLOR_BY_KIND = {
   async: "#c0392b",
   spawn: "#c0392b",
 };
+const SHAPE_ICON = {
+  entry: "◉",
+  exit: "◉",
+  step: "▭",
+  decision: "◇",
+  io: "▱",
+  parallel: "▤",
+  loop: "↻",
+  trigger: "▭",
+  branch: "◇",
+  async: "▭",
+  spawn: "▭",
+};
 
-// ---- model adapters -------------------------------------------------------
-// Returns { nodes: {id:node}, edges: [{source,target,label}], roots: [ids] }
+// Returns { nodes: {id:node}, edges: [{source,target,label,loop}], roots: [ids] }
 function buildGraph(data) {
   const nodes = {};
   const edges = [];
@@ -59,9 +73,7 @@ function buildGraph(data) {
 
   if (data.phases) {
     data.phases.forEach((ph) => {
-      (ph.nodes || []).forEach((n) => {
-        nodes[n.id] = n;
-      });
+      (ph.nodes || []).forEach((n) => { nodes[n.id] = n; });
     });
     Object.values(nodes).forEach((n) => {
       if (n.kind === "entry") roots.push(n.id);
@@ -76,7 +88,6 @@ function buildGraph(data) {
     if (!roots.length && data.phases.length)
       (data.phases[0].nodes || []).forEach((n) => { if (n.kind === "entry") roots.push(n.id); });
   } else {
-    const seen = {};
     (function walk(list, pid) {
       (list || []).forEach((n, i) => {
         const id = n.id || (pid ? pid + "." + i : "n" + i);
@@ -94,50 +105,184 @@ function buildGraph(data) {
 
 function render() {
   const g = buildGraph(current);
-  renderTree(g);
-  renderGraph(g);
-  document.getElementById("detailBody").textContent = current.entry ||
-    (current.meta && current.meta.kind) || "（无入口说明）";
+  renderNav(g);
+  renderSource(g, selectedId);
+  if (!document.getElementById("graphPanel").classList.contains("collapsed"))
+    renderGraph(g);
 }
 
-function renderTree(g) {
-  const byPid = {};
-  Object.entries(g.edges).forEach(([_, e]) => {
-    if (e.loop) return;
-    (byPid[e.source] = byPid[e.source] || []).push(e.target);
-  });
+// ---- left: Phase Navigator (flat, grouped) -------------------------------
+function renderNav(g) {
   const root = document.getElementById("tree");
   root.innerHTML = "";
-  const visited = new Set();
-  function build(id) {
-    if (visited.has(id)) return null;
-    visited.add(id);
-    const n = g.nodes[id];
-    if (!n) return null;
-    const ul = document.createElement("ul");
-    const li = document.createElement("li");
-    const span = document.createElement("span");
-    span.className = "node " + (n.kind || "step");
-    const tag = n.kind === "decision" ? "◇ " : n.kind === "entry" || n.kind === "exit" ? "◉ " : "▸ ";
-    span.textContent = tag + (n.kind || "step") + ": " + (n.label || "");
-    span.onclick = () => showDetail(n);
-    li.appendChild(span);
-    const kids = byPid[id] || [];
-    kids.forEach((cid) => {
-      const sub = build(cid);
-      if (sub) li.appendChild(sub);
+  const showDecisionsOnly = document.getElementById("showDecisions").checked;
+  const term = document.getElementById("search").value.trim().toLowerCase();
+
+  const phases = current.phases ||
+    [{ id: "_", name: "流程", nodes: Object.values(g.nodes) }];
+
+  phases.forEach((ph) => {
+    const visible = (ph.nodes || []).filter((n) => {
+      if (showDecisionsOnly && n.kind !== "decision") return false;
+      if (term && !(JSON.stringify(n).toLowerCase().includes(term))) return false;
+      return true;
     });
-    ul.appendChild(li);
-    return ul;
-  }
-  const top = document.createElement("ul");
-  (g.roots.length ? g.roots : Object.keys(g.nodes)).forEach((id) => {
-    const sub = build(id);
-    if (sub) top.appendChild(sub.firstChild);
+    if (!visible.length) return;
+
+    const block = document.createElement("div");
+    block.className = "phase-block";
+
+    const head = document.createElement("div");
+    head.className = "phase-head";
+    const badge = document.createElement("span");
+    badge.className = "phase-badge " + (ph.kind || "");
+    badge.textContent = ph.kind || "";
+    head.appendChild(badge);
+    const title = document.createElement("span");
+    title.className = "phase-title";
+    title.textContent = (ph.id ? ph.id + " · " : "") + ph.name;
+    head.appendChild(title);
+    block.appendChild(head);
+
+    const list = document.createElement("div");
+    list.className = "phase-list";
+    visible.forEach((n) => {
+      const row = document.createElement("div");
+      row.className = "node-row kind-" + (n.kind || "step") +
+        (n.id === selectedId ? " selected" : "");
+      const icon = document.createElement("span");
+      icon.className = "node-icon";
+      icon.textContent = SHAPE_ICON[n.kind] || "▭";
+      row.appendChild(icon);
+      const label = document.createElement("span");
+      label.className = "node-label";
+      label.textContent = (n.label || n.id);
+      row.appendChild(label);
+      if (n.kind === "decision") {
+        const br = document.createElement("span");
+        br.className = "node-branch";
+        br.textContent = " ✓" + (n.yes_branch || "?") + " ✗" + (n.no_branch || "?");
+        row.appendChild(br);
+      }
+      if (n.source && n.source.path && document.getElementById("showSources").checked) {
+        const sp = document.createElement("span");
+        sp.className = "node-src";
+        sp.textContent = n.source.path;
+        row.appendChild(sp);
+      }
+      row.onclick = () => {
+        selectedId = n.id;
+        document.querySelectorAll(".node-row.selected").forEach((el) => el.classList.remove("selected"));
+        row.classList.add("selected");
+        renderSource(g, n.id);
+      };
+      list.appendChild(row);
+    });
+    block.appendChild(list);
+    root.appendChild(block);
   });
-  root.appendChild(top);
 }
 
+// ---- center: Source Inspector --------------------------------------------
+function renderSource(g, id) {
+  const body = document.getElementById("sourceBody");
+  body.innerHTML = "";
+
+  if (!id || !g.nodes[id]) {
+    renderOverview(g);
+    return;
+  }
+  const n = g.nodes[id];
+
+  const kind = document.createElement("div");
+  kind.className = "src-kind kind-" + (n.kind || "step");
+  kind.textContent = (SHAPE_ICON[n.kind] || "▭") + " " + (n.kind || "step");
+  body.appendChild(kind);
+
+  const title = document.createElement("h4");
+  title.textContent = n.label || n.id;
+  body.appendChild(title);
+
+  if (n.detail) {
+    const d = document.createElement("div");
+    d.className = "src-detail";
+    d.textContent = n.detail;
+    body.appendChild(d);
+  }
+
+  const src = n.source;
+  if (src) {
+    const box = document.createElement("div");
+    box.className = "src-box";
+    const h = document.createElement("div");
+    h.className = "src-box-head";
+    h.textContent = "来源 (" + src.type + ")";
+    box.appendChild(h);
+
+    if (src.type === "file") {
+      const loc = document.createElement("div");
+      loc.className = "src-loc";
+      const abs = src.path.startsWith("/") ? src.path :
+        "/Users/euston/personal/project_analyze/" + src.path;
+      loc.innerHTML = '<a href="vscode://file/' + abs + ":" + src.line_start +
+        '" title="在 IDE 打开">' + src.path + " : " + src.line_start + "-" + src.line_end + "</a>";
+      box.appendChild(loc);
+    } else if (src.type === "system_prompt") {
+      const sec = document.createElement("div");
+      sec.className = "src-loc";
+      sec.textContent = "section: " + src.section;
+      box.appendChild(sec);
+    }
+    if (src.quote) {
+      const q = document.createElement("pre");
+      q.className = "src-quote";
+      q.textContent = "“" + src.quote + "”";
+      box.appendChild(q);
+    }
+    body.appendChild(box);
+  } else {
+    const none = document.createElement("div");
+    none.className = "src-box-note";
+    none.textContent = "⚠ 该节点无来源（非法 trace）";
+    body.appendChild(none);
+  }
+
+  if (n.kind === "decision") {
+    const br = document.createElement("div");
+    br.className = "src-branch";
+    br.textContent = "分支：yes → " + (n.yes_branch || "?") + " ／  no → " + (n.no_branch || "?");
+    body.appendChild(br);
+  }
+}
+
+function renderOverview(g) {
+  const body = document.getElementById("sourceBody");
+  body.innerHTML = "";
+  const h = document.createElement("h4");
+  h.textContent = "Workflow 概览";
+  body.appendChild(h);
+  const meta = document.createElement("div");
+  meta.className = "src-detail";
+  const nodeCount = Object.keys(g.nodes).length;
+  const decCount = Object.values(g.nodes).filter((n) => n.kind === "decision").length;
+  const conds = (current.conditions || []).length;
+  meta.textContent = "节点数：" + nodeCount + "　决策节点：" + decCount +
+    "　条件数：" + conds + "　假设数：" + ((current.assumptions || []).length);
+  body.appendChild(meta);
+
+  const list = document.createElement("div");
+  list.className = "phase-list";
+  Object.values(g.nodes).filter((n) => n.kind === "decision").forEach((n) => {
+    const row = document.createElement("div");
+    row.className = "node-row kind-decision";
+    row.textContent = "◇ " + (n.label || n.id) + "  ✓" + (n.yes_branch || "?") + " ✗" + (n.no_branch || "?");
+    row.onclick = () => { selectedId = n.id; renderNav(g); renderSource(g, n.id); };
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+}
+
+// ---- right: Graph (optional) ---------------------------------------------
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (window.cy) { window.cy.destroy(); window.cy = null; }
@@ -145,13 +290,10 @@ function renderGraph(g) {
 
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
-    const src = n.source || {};
-    const sub = src.path ? " [" + src.path + "]" : "";
+    const s = n.source || {};
+    const sub = s.path ? " [" + s.path + "]" : "";
     const label = (n.label || n.kind || "step") + (showSources && sub ? "\n" + sub : "");
-    elements.push({
-      data: { id, label },
-      classes: n.kind || "step",
-    });
+    elements.push({ data: { id, label }, classes: n.kind || "step" });
   });
   g.edges.forEach((e) => {
     if (e.loop) {
@@ -166,7 +308,8 @@ function renderGraph(g) {
 
   if (typeof cytoscape === "undefined") {
     container.innerHTML =
-      '<p style="padding:1rem">图视图需要 Cytoscape.js（CDN）。左侧树视图可用；联网后刷新即加载图。</p>';
+      '<div class="graph-fallback"><p>图视图需要 Cytoscape.js（CDN）。</p>' +
+      '<p>拓扑：' + Object.keys(g.nodes).length + " 节点 / " + g.edges.length + " 边。</p></div>";
     return;
   }
   window.cy = cytoscape({
@@ -182,12 +325,8 @@ function renderGraph(g) {
           shape: "rectangle",
         },
       },
-      ...Object.entries(SHAPE_BY_KIND).map(([k, s]) => ({
-        selector: ".key-" + k, style: { shape: s },
-      })),
-      ...Object.entries(COLOR_BY_KIND).map(([k, c]) => ({
-        selector: ".key-" + k, style: { "background-color": c, "border-color": c },
-      })),
+      ...Object.entries(SHAPE_BY_KIND).map(([k, s]) => ({ selector: ".key-" + k, style: { shape: s } })),
+      ...Object.entries(COLOR_BY_KIND).map(([k, c]) => ({ selector: ".key-" + k, style: { "background-color": c, "border-color": c } })),
       {
         selector: "edge", style: {
           width: 2, "line-color": "#999", "target-arrow-color": "#999",
@@ -195,68 +334,24 @@ function renderGraph(g) {
           label: "data(label)", "text-rotation": "autorotate", color: "#b45309",
         },
       },
-      { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309", "line-style": "solid" } },
+      { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309" } },
       { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
     ],
-    layout: { name: "breadthfirst", directed: true, padding: 20 },
+    layout: { name: "breadthfirst", directed: true, padding: 20, fit: true },
   });
-  // assign shape classes
   Object.entries(g.nodes).forEach(([id, n]) => {
     const el = window.cy.getElementById(id);
     if (el) el.addClass("key-" + (n.kind || "step"));
   });
   window.cy.on("tap", "node", (e) => {
     const n = g.nodes[e.target.id()];
-    if (n) showDetail(n);
-  });
-}
-
-function showDetail(node) {
-  const d = document.getElementById("detailBody");
-  d.innerHTML = "";
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  meta.textContent = "kind: " + (node.kind || "step");
-  d.appendChild(meta);
-
-  const src = node.source;
-  if (src) {
-    const s = document.createElement("div");
-    s.className = "source";
-    const head = document.createElement("div");
-    head.className = "source-head";
-    head.textContent = "来源";
-    s.appendChild(head);
-    const type = document.createElement("div");
-    type.textContent = "type: " + (src.type || "—");
-    s.appendChild(type);
-    const path = document.createElement("div");
-    path.textContent = "path: " + (src.path || "—");
-    s.appendChild(path);
-    if (src.quote) {
-      const q = document.createElement("pre");
-      q.textContent = "“" + src.quote + "”";
-      s.appendChild(q);
+    if (n) {
+      selectedId = n.id;
+      renderNav(g);
+      renderSource(g, n.id);
     }
-    d.appendChild(s);
-  }
-
-  const pre = document.createElement("pre");
-  pre.textContent = node.detail || "(无 detail)";
-  d.appendChild(pre);
-
-  if (node.children && node.children.length) {
-    const c = document.createElement("div");
-    c.className = "meta";
-    c.textContent = "顺序子节点数: " + node.children.length;
-    d.appendChild(c);
-  }
-  if (node.kind === "decision") {
-    const c = document.createElement("div");
-    c.className = "meta";
-    c.textContent = "分支: yes→" + (node.yes_branch || "?") + " / no→" + (node.no_branch || "?");
-    d.appendChild(c);
-  }
+  });
+  graphReady = true;
 }
 
 async function loadList() {
@@ -277,9 +372,17 @@ async function loadTrace() {
   const name = document.getElementById("traceSelect").value;
   if (!name) return;
   current = await api("/api/traces/" + encodeURIComponent(name) + "?" + params());
+  selectedId = (current.phases && current.phases[0].nodes.find((n) => n.kind === "entry") || {}).id || null;
   render();
 }
 
+document.getElementById("toggleTree").onclick = () =>
+  document.getElementById("treePanel").classList.toggle("collapsed");
+document.getElementById("toggleGraph").onclick = () => {
+  const gp = document.getElementById("graphPanel");
+  gp.classList.toggle("collapsed");
+  if (!gp.classList.contains("collapsed") && current) renderGraph(buildGraph(current));
+};
 document.getElementById("traceSelect").onchange = loadTrace;
 document.getElementById("reload").onclick = loadTrace;
 document.getElementById("depth").oninput = (e) => {
