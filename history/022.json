@@ -1,0 +1,42 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户贴出 127.0.0.1:8765 的 404 截图并问为何；agent 排查 server.py 路径，定位为 WEB 指向 server/web/ 而非 agent-trace-view/web/（前端真实位置）。记入 Q13。"
+  },
+  "source": {
+    "user_prompt": "为什么会有这样的问题？（附 127.0.0.1:8765 返回 404 的截图）记录到questions当中",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "ce44496e6d6c488a800433192a4bbf9c",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/013.md"
+    ],
+    "change_summary": "记录 Q13：agent-trace-view 404 根因（server.py WEB 路径算错，指向不存在的 server/web/）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "qna": {
+      "question_ref": "Q13",
+      "question": "agent-trace-view 打开 127.0.0.1:8765 返回 404，为什么？",
+      "answer_summary": "根因是 server.py 第15行 WEB=os.path.join(ROOT,'web') 算出 server/web/，而前端在 agent-trace-view/web/（server 同级）；server 服务不存在的 server/web/ → SimpleHTTPRequestHandler 取不到文件 → 404。修复：WEB 改为 os.path.dirname(ROOT)/web。",
+      "answer_location": "questions/013.md"
+    }
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "schema_version": "2.0",
+  "event_id": 22,
+  "recorded_at": "2026-10-17T11:01:44.883804+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "c5f7b93ae1d59206f28bc0fc06e3db8cdf2c4281a009f9b8592f89dca3225de3",
+    "plan_md_line_count": 69,
+    "source_doc": "architecture/001.md"
+  }
+}

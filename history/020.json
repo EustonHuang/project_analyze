@@ -1,0 +1,39 @@
+{
+  "event_type": "architecture_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户设计批评重修 architecture/001.md：采集与渲染解耦为两个独立 skill（agent-trace 只产 trace JSON 养料文件；agent-trace-view 独立启动前后端渲染），trace JSON 为两者唯一契约接口。删除原'单 skill 内含采集+渲染'设计。"
+  },
+  "source": {
+    "user_prompt": "为什么你的agent-trace skill要启动前后端？...前后端的启动不应该和trace解耦吗？你可以写另一个skill来启动前后端，不应该这么设计吗？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/001.md",
+      "architecture_index.json"
+    ],
+    "change_summary": "采集/渲染解耦为两个 skill，trace JSON 为契约；revision=6。",
+    "sections_affected": [
+      "architecture"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "按 plan-first + no-meta 规则：仅修订方案（无元描述），未实现。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 20,
+  "recorded_at": "2026-10-17T10:51:15.685109+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "c5f7b93ae1d59206f28bc0fc06e3db8cdf2c4281a009f9b8592f89dca3225de3",
+    "plan_md_line_count": 69,
+    "source_doc": "architecture/001.md"
+  }
+}

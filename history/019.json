@@ -1,0 +1,38 @@
+{
+  "event_type": "rule_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "新增常驻规则 .codebuddy/rules/no-meta/RULE.mdc：禁止元描述——所有面向人看的文档与注释必须是最终产物本身，不得夹带修订/过程注解、作者偏好立场、状态闲聊；决策来源进 history 而非文档。"
+  },
+  "source": {
+    "user_prompt": "请写在rules下面，我永远不要见到元描述！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".codebuddy/rules/no-meta/RULE.mdc"
+    ],
+    "change_summary": "新增 No-Meta-Descriptions 强制规则（alwaysApply），禁止文档/注释中的元描述。",
+    "sections_affected": [
+      "rules"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "规则按框架机制于新会话开始注入；本会话已手动遵守。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 19,
+  "recorded_at": "2026-10-17T10:48:27.090279+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "a5be153cc3ba4caa0e5beb7770af775e14eee126ffb3ca5dcf6a91f46ba5bbd7",
+    "plan_md_line_count": 76,
+    "source_doc": "architecture/001.md"
+  }
+}

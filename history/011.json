@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 承认四类机制无法证明完备，用证伪法找出六类逃逸问题并引入 ISO 25010 外部校验锚，写入 questions/011.md。"
+  },
+  "source": {
+    "user_prompt": "你确定这四类机制是完整的吗？你怎么确定他们是完整的？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/011.md"
+    ],
+    "change_summary": "记录用户'四类是否完备、如何确定完备'的质疑与 agent 的证伪法+外部框架回答（Q11）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q11",
+    "question": "你确定这四类机制是完整的吗？你怎么确定他们是完整的？",
+    "answer_summary": "无法证明完备;证伪找逃逸类(发现/可理解性/检索/语义有效/可运维/治理);用ISO25010外部锚逼近完备。",
+    "answer_location": "questions/011.md"
+  },
+  "correction": null,
+  "comments": "用户要求证明分类完备性；agent 改为承认无法证明、用证伪+外部框架(ISO25010)校验，并暴露原四类漏掉'可理解性/发现'(恰为Q1原痛)。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 11,
+  "recorded_at": "2026-10-16T21:56:29.883259+08:00",
+  "standard_version": "v0.8"
+}

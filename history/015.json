@@ -1,0 +1,39 @@
+{
+  "event_type": "architecture_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户评审意见修订 architecture/001.md：存储与渲染由纯 markdown+mermaid 改为前后端 viewer 应用（结构化 JSON 存储 + 轻量后端 API + 交互式前端图/树/详情面板）；交付物同步从单一 skill 升级为 agent-trace-server + agent-trace-web。仍只做 agent 流，未写任何实现代码。"
+  },
+  "source": {
+    "user_prompt": "存储与渲染 你觉得用markdown渲染人看得很轻松吗？你应当写前后端OK？？？？？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/001.md",
+      "architecture_index.json"
+    ],
+    "change_summary": "修订 v1 存储与渲染（→前后端 viewer）、交付物（→server+web）；revision=2。",
+    "sections_affected": [
+      "architecture"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "按 plan-first 规则：仅修订方案供评审，未实现。等用户批准后再写前后端代码。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 15,
+  "recorded_at": "2026-10-17T10:40:59.281115+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "313882e39ed9d5f0f0de6a3585d01d8587752e5187997ea9cc3e24389c3ec1f3",
+    "plan_md_line_count": 66,
+    "source_doc": "architecture/001.md"
+  }
+}

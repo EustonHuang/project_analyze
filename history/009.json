@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 承认 Q5-Q8 是打地鼠式回答，给出统一根因架构（单一不变式+验证管线）并写入 questions/009.md，提议 pivot 到 architecture/001.md。"
+  },
+  "source": {
+    "user_prompt": "你现在给我的感觉就是在头痛医头脚痛医脚，不是吗？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/009.md"
+    ],
+    "change_summary": "记录用户对'Q5-Q8 像打地鼠'的批评与 agent 的统一根因架构回答（Q9，收敛为单一不变式+验证管线）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q9",
+    "question": "你现在给我的感觉就是在头痛医头脚痛医脚，不是吗？（要求统一根因设计而非堆补丁）",
+    "answer_summary": "承认打地鼠;根因=断言式入图;单一不变式+验证管线一次性消解Q5-Q8;pivot到architecture。",
+    "answer_location": "questions/009.md"
+  },
+  "correction": null,
+  "comments": "用户批评 Q5-Q8 逐条加机制是打地鼠；本问答收敛为统一根因架构，应成为 architecture/001.md 核心。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 9,
+  "recorded_at": "2026-10-16T21:35:21.302359+08:00",
+  "standard_version": "v0.8"
+}

@@ -1,0 +1,8 @@
+<!-- 自动生成，请勿手改；改动会被脚本覆盖 -->
+
+# Architecture — TOC
+
+> 由 `append_history.py gen-toc` 自动生成；每版本正文见 `architecture/{ver}.md`。
+
+- [v001 · Agent 项目追踪方案](architecture/001.md) — 状态：历史
+- [v002 · agent-trace-view 渲染侧修复方案](architecture/002.md) — 状态：已落地

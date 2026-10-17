@@ -1,0 +1,39 @@
+{
+  "event_type": "architecture_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户评审问题（'怎么输入想 trace 的项目'）在 architecture/001.md 新增'输入'一节：定义 trace-input 收敛 + 三种输入方式（自然语言请求 / 目标引用 reference / 实时 live），并列出待确认项。"
+  },
+  "source": {
+    "user_prompt": "你这个architecture中，我怎么输入我想要trace的项目？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/001.md",
+      "architecture_index.json"
+    ],
+    "change_summary": "新增'输入：如何指定要 trace 的对象'一节；revision=3。",
+    "sections_affected": [
+      "architecture"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "按 plan-first 规则：仅修订方案供评审，未实现。等用户确认输入方式后再 implement。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 16,
+  "recorded_at": "2026-10-17T10:42:33.934669+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "e2b7aae58051994fd2fcbcc61efc5cbb1a2302125b77507229a9464688c8c7ee",
+    "plan_md_line_count": 79,
+    "source_doc": "architecture/001.md"
+  }
+}

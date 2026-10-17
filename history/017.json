@@ -1,0 +1,39 @@
+{
+  "event_type": "architecture_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户疑问澄清并重修 architecture/001.md：skill 与前后端 viewer 不冲突——交付形态仍是 agent-trace skill（采集侧 SKILL.md+模板+脚本），渲染侧用前后端 viewer（skill 脚本启动本地 server 并打开前端）。'交付物'与'输入'两节改回以 skill 为交付/入口。"
+  },
+  "source": {
+    "user_prompt": "你为什么不通过写skill的方式？你一开始不是写skill吗？怎么？做了前后端把skill的去掉了？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/001.md",
+      "architecture_index.json"
+    ],
+    "change_summary": "澄清 skill 与 FE/BE 共存；'交付物'与'输入'改回以 skill 为交付形态；revision=4。",
+    "sections_affected": [
+      "architecture"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "按 plan-first 规则：仅修订方案供评审，未实现。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 17,
+  "recorded_at": "2026-10-17T10:46:19.694725+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "5aaf77037191e80aa93cff7a19f4d1251777daf1c0795d21344aa2d9595a75ec",
+    "plan_md_line_count": 81,
+    "source_doc": "architecture/001.md"
+  }
+}

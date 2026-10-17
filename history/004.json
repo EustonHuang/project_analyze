@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 用两个具体实例（真实 Python run.py + 真实 Agent 触发链）演示如何剖析并画流程图，写入 questions/004.md。"
+  },
+  "source": {
+    "user_prompt": "关于 @/Users/euston/personal/project_analyze/questions/001.md 你先举一个例子，假如说有一段python代码/一段agent项目，你准备怎么剖析并画出流程图，用具体的例子剖析不要泛泛而谈",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/004.md"
+    ],
+    "change_summary": "记录用户要求'用具体例子演示如何剖析 python/agent 并画流程图'的问题与 agent 双实例回答（Q4）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q4",
+    "question": "针对 questions/001.md，举具体例子说明如何剖析 python 代码 / agent 项目并画出流程图（不要泛泛而谈）。",
+    "answer_summary": "用真实 run.py 与真实 Agent 触发链两个实例演示源码→捕获→Workflow Graph→Mermaid 流程图。",
+    "answer_location": "questions/004.md"
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 4,
+  "recorded_at": "2026-10-16T21:17:25.312530+08:00",
+  "standard_version": "v0.8"
+}

@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 承认 Q5-Q9 反应性回答，改为从系统本质第一性原理预想四类问题(采集/表示/信任/生命周期)各给一种架构机制，写入 questions/010.md。"
+  },
+  "source": {
+    "user_prompt": "你说消解Q5-Q8你还是在头痛医头，脚痛医脚。本质上还是我提到什么你写什么。你要自己想想当你设计一个项目追踪系统的时候，会遇到怎样的问题，怎样解决",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/010.md"
+    ],
+    "change_summary": "记录用户'停止反应性、自主第一性原理设计'的要求与 agent 的四类问题+四类机制架构骨架回答（Q10）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q10",
+    "question": "你说消解Q5-Q8你还是在打地鼠，本质是我提什么你写什么。你要自己想想设计追踪系统会遇到哪些问题、怎么解。",
+    "answer_summary": "认错反应性;四类问题(采集/表示/信任/生命周期)各一种机制;Q5-Q8仅信任类子集。",
+    "answer_location": "questions/010.md"
+  },
+  "correction": null,
+  "comments": "用户要求从系统本质而非其提示列表出发做第一性原理设计；Q5-Q8 被重新定位为'信任'问题类的子集。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 10,
+  "recorded_at": "2026-10-16T21:38:38.276697+08:00",
+  "standard_version": "v0.8"
+}

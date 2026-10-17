@@ -1,0 +1,104 @@
+{
+  "max_id": 14,
+  "revision": 14,
+  "briefs": [
+    {
+      "num": 1,
+      "question_ref": "Q1",
+      "question": "设计一个把任何项目执行流（AI Agent 工作流 / 代码执行流）拆解并展示的工具，如何实现的？",
+      "answer_summary": "提 capture-max/render-on-demand 原则 + 统一 Workflow Graph 模型 + 两类采集器(concept/code) + 可折叠视图 + CLI 编排。",
+      "file": "questions/001.md"
+    },
+    {
+      "num": 2,
+      "question_ref": "Q2",
+      "question": "一般流程图中的标记/符号包含哪些（开始/结束、步骤、条件、循环、递归等）？",
+      "answer_summary": "归为五类：基础控制流(起止/处理/判断/流向)、结构化构造(循环/准备/预定义处理)、I/O与数据、连接与并发；并映射到本工具 Workflow Graph 的少量 kind。",
+      "file": "questions/002.md"
+    },
+    {
+      "num": 3,
+      "question_ref": "Q3",
+      "question": "请给流程图符号的参考网页/文章（不要自制HTML，要外部权威资料）。",
+      "answer_summary": "按标准/百科、厂商速查(Lucidchart/SmartDraw/VisualParadigm)、工具库(diagrams.net)、中文(百度百科/ProcessOn)分层给出参考链接，并映射到 Workflow Graph。",
+      "file": "questions/003.md"
+    },
+    {
+      "num": 4,
+      "question_ref": "Q4",
+      "question": "针对 questions/001.md，举具体例子说明如何剖析 python 代码 / agent 项目并画出流程图（不要泛泛而谈）。",
+      "answer_summary": "用真实 run.py(调用/循环/分支/多线程)与真实 Agent 触发链(prompt→hook/skill/memory→并行工具→loop)两个实例，演示源码→捕获→Workflow Graph→Mermaid 流程图，并映射回 001 模型。",
+      "file": "questions/004.md"
+    },
+    {
+      "num": 5,
+      "question_ref": "Q5",
+      "question": "若剖析出的 workflow 与实际有出入（一次出入就损可信度），怎么处理？",
+      "answer_summary": "无法保证零偏差，故让偏差可见可溯源：置信度分层(traced/modeled/unverified)+来源凭证徽章+verified-only过滤；代码模式用真实trace代推断；复跑diff/交叉校验/纠错留痕；非确定区诚实标注不编线性顺序。",
+      "file": "questions/005.md"
+    },
+    {
+      "num": 6,
+      "question_ref": "Q6",
+      "question": "你怎么保证置信度标签本身没错（万一说traced实为unverified）？用户发现一处出入就怀疑全局而弃用怎么办？",
+      "answer_summary": "治本:confidence 由捕获机制生成(traced 须真实trace背书+可重放校验+保守默认unverified);阻断contagion:信任局部化(每节点独立+前置校准+相似节点联动圈定);把出错变信任契机(纠错透明+验证报告+系统性under-claim)。",
+      "file": "questions/006.md"
+    },
+    {
+      "num": 7,
+      "question_ref": "Q7",
+      "question": "纠错透明下，怎么解决头痛医头（只修节点不治根因）和幻觉（编造不存在步骤）？",
+      "answer_summary": "头痛医头:缺陷分诊归小类→修规则而非点→全图重跑/重验+provenance爆裂半径圈定同类;幻觉:证据绑定硬规则(无证据不出节点)+Mode A显式假设+生成/验证分离(非LLM验证器对仓库真实定义校验)。",
+      "file": "questions/007.md"
+    },
+    {
+      "num": 8,
+      "question_ref": "Q8",
+      "question": "纠错方案本身可能是看似正确实则站不住脚的幻觉（错误的修复方案），怎么解决？",
+      "answer_summary": "让方案可被证伪(带可检验预测+先复现再理论,失败拒收);不由提出者自证(非LLM校验+用户确认+对抗式自否);防错误全局规则(不确定偏局部有界修正,全局规则须由已验证局部赚得,纠错留痕可重开)。",
+      "file": "questions/008.md"
+    },
+    {
+      "num": 9,
+      "question_ref": "Q9",
+      "question": "你现在给我的感觉就是在头痛医头脚痛医脚，不是吗？（要求统一根因设计而非堆补丁）",
+      "answer_summary": "承认打地鼠;根因=内容'断言式'入图;提单一不变式(一切=候选+可复现证据token+过分离验证器,不过则降级unverified)+一条管线,证明一次性消解Q5–Q8;Q5–Q8降为验收标准,pivot到architecture/001.md。",
+      "file": "questions/009.md"
+    },
+    {
+      "num": 10,
+      "question_ref": "Q10",
+      "question": "你说消解Q5-Q8你还是在打地鼠，本质是我提什么你写什么。你要自己想想设计追踪系统会遇到哪些问题、怎么解。",
+      "answer_summary": "认错反应性;从系统本质(采集+模型+视图+生命周期)预想四类问题:采集完整性/规模表示/保真信任(Q5-Q8子集)/生命周期,每类一种架构机制;Q5-Q8仅信任类子集。",
+      "file": "questions/010.md"
+    },
+    {
+      "num": 11,
+      "question_ref": "Q11",
+      "question": "你确定这四类机制是完整的吗？你怎么确定他们是完整的？",
+      "answer_summary": "无法证明完备;用证伪法找出逃出四类的真实问题(发现/可理解性/检索/语义有效/可运维/治理)证其不完整;完备靠方法论逼近:证伪+外部参照系(ISO25010)+可修订假设;四类是v1假设非终局。",
+      "file": "questions/011.md"
+    },
+    {
+      "num": 12,
+      "question_ref": "Q12",
+      "question": "详细列出 ISO/IEC 25010（作为 Q11 分类外部校验锚）。",
+      "answer_summary": "列出 25010:2023 产品质量模型8特性+子特性、质量使用模型;并映射校验Q11分类,证明原四类漏掉Usability/Security(即可理解性/发现/治理)。",
+      "file": "questions/012.md"
+    },
+    {
+      "num": 13,
+      "question_ref": "Q13",
+      "question": "agent-trace-view 打开 127.0.0.1:8765 返回 404，为什么？",
+      "answer_summary": "根因是 server.py 第15行 WEB=os.path.join(ROOT,'web') 算出 server/web/，而前端在 agent-trace-view/web/（server 同级）；server 服务的是不存在的 server/web/ → SimpleHTTPRequestHandler 取不到文件 → 404。修复：WEB 改为 os.path.dirname(ROOT)/web。",
+      "file": "questions/013.md"
+    },
+    {
+      "num": 14,
+      "question_ref": "Q14",
+      "question": "调用 agent-trace-view 后 server 一直前台运行、卡住命令行，为什么？",
+      "answer_summary": "根因是 server.py 末尾 HTTPServer(...).serve_forever() 是阻塞调用，作为前台 CLI 命令执行时永久占住命令行直到被强杀。修复：后台/分离启动、加空闲看门狗自退、提供 stop 指令，并在 skill 说明里写清如何停止。",
+      "file": "questions/014.md"
+    }
+  ]
+}

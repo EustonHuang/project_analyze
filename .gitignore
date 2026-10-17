@@ -1,0 +1,10 @@
+# scratch / 临时载体（框架豁免目录）
+.tmp/
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# os
+.DS_Store

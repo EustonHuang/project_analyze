@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 回答'workflow 与实际不符时如何保住可信度'的设计问题，写入 questions/005.md。"
+  },
+  "source": {
+    "user_prompt": "假如你反应的workflow和实际的workflow有出入，你该怎么办？记住，只要你有一次出入，那么你的workflow的可信度就会大打折扣，你怎么处理这个问题？写到questions中",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/005.md"
+    ],
+    "change_summary": "记录用户关于'workflow 与实际不符时如何保住可信度'的问题与 agent 五条机制回答（Q5）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q5",
+    "question": "若剖析出的 workflow 与实际有出入（一次出入就损可信度），怎么处理？",
+    "answer_summary": "让偏差可见可溯源：置信度分层+凭证徽章+verified-only过滤；真实trace代推断；验证闭环；非确定区诚实标注。",
+    "answer_location": "questions/005.md"
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 5,
+  "recorded_at": "2026-10-16T21:24:07.164257+08:00",
+  "standard_version": "v0.8"
+}

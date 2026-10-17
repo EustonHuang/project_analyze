@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", system-ui, sans-serif; }
+body { display: flex; flex-direction: column; }
+header {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding: 8px 12px; background: #1f2933; color: #e4e7eb;
+}
+header select, header input, header button {
+  padding: 4px 8px; border-radius: 4px; border: 1px solid #3e4c59; background: #323f4b; color: #e4e7eb;
+}
+header button { cursor: pointer; }
+main { flex: 1; display: flex; min-height: 0; }
+#treePanel { width: 28%; overflow: auto; border-right: 1px solid #d2d6dc; padding: 8px; background: #f8fafc; }
+#graphPanel { flex: 1; position: relative; }
+#cy { position: absolute; inset: 0; }
+#detail { width: 26%; border-left: 1px solid #d2d6dc; padding: 12px; overflow: auto; background: #f8fafc; }
+#tree ul { list-style: none; padding-left: 14px; margin: 4px 0; }
+#tree > ul { padding-left: 0; }
+#tree .node { cursor: pointer; display: inline-block; padding: 2px 4px; border-radius: 4px; }
+#tree .node:hover { background: #dbeafe; }
+#tree .entry { color: #1d4ed8; font-weight: 600; }
+#tree .parallel { color: #b45309; }
+#tree .loop { color: #6d28d9; }
+#tree .branch { color: #0f766e; }
+#tree .async, #tree .spawn { color: #b91c1c; }
+#tree .io { color: #0d9488; }
+#detail h3 { margin-top: 0; }
+#detail .meta { color: #52606d; font-size: 12px; margin-bottom: 6px; }
+#detail pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #d2d6dc; padding: 8px; border-radius: 4px; }

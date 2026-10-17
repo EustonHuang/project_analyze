@@ -1,0 +1,38 @@
+{
+  "event_type": "rule_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "新增常驻规则 .codebuddy/rules/plan-first/RULE.mdc：凡方案改进/新功能/架构变更，必须先写方案供评审，用户明确批准后再实现，严禁越界创建实现文件。"
+  },
+  "source": {
+    "user_prompt": "请写进rules里面，但凡涉及到方案改进都先写方案，不要他妈的越界！！！！！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".codebuddy/rules/plan-first/RULE.mdc"
+    ],
+    "change_summary": "新增 Plan-First 强制规则（alwaysApply），约束：方案改进先写方案、批准后再实现、不得越界。",
+    "sections_affected": [
+      "rules"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "规则在本会话已手动遵守；MDC 规则按框架机制于新会话开始注入，如需立即全量生效请新建会话。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 14,
+  "recorded_at": "2026-10-17T10:38:07.414260+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "48f0fb686dc4f15c8792037c084ffb7fe2460edda5cb950a9622106b2133f741",
+    "plan_md_line_count": 46,
+    "source_doc": "architecture/001.md"
+  }
+}

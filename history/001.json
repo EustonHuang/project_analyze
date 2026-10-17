@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 回答用户关于'项目执行流拆解与展示工具'的设计问题，并写入 questions/001.md。"
+  },
+  "source": {
+    "user_prompt": "我先讲一下我这个需求的背景。很多时候，我需要了解项目的运作方式（先执行什么，后执行什么），或者某段代码，某个架构的运转方式。这样能让我彻底地，系统地了解这个项目/代码/架构。但是很多时候我很难彻底了解一个项目，因为我不知道入口是什么，入口之后需要进行哪些步骤，而在找步骤的时候又很容易迷失。\n\n所以我写这个项目的目的是能够帮我更好地了解一个项目是怎么运作的。现在我有两个具体的case：1. 关于AI Agent的运作方式：我们从prompt作为起点，任何一个prompt之后，AI会触发一系列关联，如rules,memory,hook,skills等等，每个触发都有一定的触发条件……我需要了解的就是这个，一个项目的整体execute workflow。同时这个workflow在记的时候确保每个细节都记住（或者用户设定类似于depth这样的参数，示意挖几层）。但是在展示的时候，可以选择性地详略展示，用户可以选择展开细节，可以选择只看整体。2. 关于代码，比如说你有一个python代码，你从一个命令开始 python run_script.py + 一些参数，然后从这个script开始，一步一步记录……同样的，详略有当，记的时候越详细越好，展示的时候用户可以展开或者收起细节。\n\n以上是我的idea，我需要这个项目就是设计这样一个东西，能够把任何项目步骤拆解并展示给读者，你会怎么实现，请写到questions中",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/001.md"
+    ],
+    "change_summary": "记录用户关于'项目执行流拆解与展示工具'的设计问题与 agent 提案（Q1，含两个 case 背景）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q1",
+    "question": "设计一个把任何项目执行流（AI Agent 工作流 / 代码执行流）拆解并展示的工具，如何实现的？",
+    "answer_summary": "提 capture-max/render-on-demand 原则 + 统一 Workflow Graph 模型 + 两类采集器(concept/code) + 可折叠视图 + CLI 编排。",
+    "answer_location": "questions/001.md"
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 1,
+  "recorded_at": "2026-10-16T09:27:28.553254+08:00",
+  "standard_version": "v0.8"
+}

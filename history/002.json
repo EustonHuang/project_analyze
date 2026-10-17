@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 回答用户关于'通用流程图标记/符号'的问题，并写入 questions/002.md。"
+  },
+  "source": {
+    "user_prompt": "我想问个问题，请记录到questions中\n\n一般的流程图中的标记会包含哪些？比如开始/结束，步骤，条件（if），循环，递归（如果有的话）等等等等",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/002.md"
+    ],
+    "change_summary": "记录用户关于'通用流程图标记/符号'的问题与 agent 回答（Q2），并连接到本项目 Workflow Graph 模型。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q2",
+    "question": "一般流程图中的标记/符号包含哪些（开始/结束、步骤、条件、循环、递归等）？",
+    "answer_summary": "归为五类：基础控制流、结构化构造、I/O与数据、连接与并发，并映射到本工具 Workflow Graph 的少量 kind。",
+    "answer_location": "questions/002.md"
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 2,
+  "recorded_at": "2026-10-16T09:35:41.387229+08:00",
+  "standard_version": "v0.8"
+}

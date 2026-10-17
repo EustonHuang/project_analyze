@@ -1,0 +1,39 @@
+{
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "AI agent 纠正了上一轮误解（用户要外部参考网页而非自制HTML），提供流程图符号参考链接并写入 questions/003.md。"
+  },
+  "source": {
+    "user_prompt": "我他妈不是让你create一个html OK??????我的意思是请你给我reference的流程图的网页！！！！！！文章！！！！！！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "00509ac7c06f4118a03965679b3497fc",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/003.md"
+    ],
+    "change_summary": "记录用户关于'流程图符号参考网页/文章'的问题与 agent 提供的分层参考链接（Q3）。",
+    "sections_affected": [
+      "questions"
+    ],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q3",
+    "question": "请给流程图符号的参考网页/文章（不要自制HTML，要外部权威资料）。",
+    "answer_summary": "按标准/百科、厂商速查、工具库、中文分层给出参考链接，并映射到 Workflow Graph。",
+    "answer_location": "questions/003.md"
+  },
+  "correction": null,
+  "comments": "用户明确纠正：不要生成自制 HTML，需要外部参考链接。 source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失且未提供 --model），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "recorded_by": "ai",
+  "schema_version": "2.0",
+  "event_id": 3,
+  "recorded_at": "2026-10-16T11:29:28.669235+08:00",
+  "standard_version": "v0.8"
+}
