@@ -1,0 +1,44 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "实现 architecture/003：重写 agent-trace 采集侧（模板、校验器支持 workflow 模型、强制 source 与 decision 分支、SKILL 说明），并产出具体 trace agent_traces/agent_system_workflow.json（P1–P5 六阶段、10 条件、每个节点带 source）；重写 agent-trace-view 渲染侧（按形状映射表渲染全部节点类型、decision 出边标 yes/no、详情面板展示 source、新增只看决策/显示来源控件、兼容 legacy 模型）。"
+  },
+  "source": {
+    "user_prompt": "请implement 003.md",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "agent_traces/agent_system_workflow.json",
+      ".codebuddy/skills/agent-trace/references/trace_template.md",
+      ".codebuddy/skills/agent-trace/scripts/validate.py",
+      ".codebuddy/skills/agent-trace/SKILL.md",
+      ".codebuddy/skills/agent-trace-view/web/app.js",
+      ".codebuddy/skills/agent-trace-view/web/index.html",
+      ".codebuddy/skills/agent-trace-view/web/styles.css",
+      ".codebuddy/skills/agent-trace-view/server/server.py",
+      ".codebuddy/skills/agent-trace-view/SKILL.md",
+      ".gitignore"
+    ],
+    "change_summary": "落地 003：采集侧支持 agent_system_workflow 模型（强制 source + decision 分支），产出具体系统工作流 trace；渲染侧按形状映射表渲染全节点类型并展示来源。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 32,
+  "recorded_at": "2026-10-17T12:30:15.571881+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "cbb08b837492fe77230ae93ee058036530a9a2b46f215eb0b02f488f4a1a34f8",
+    "plan_md_line_count": 192,
+    "source_doc": "architecture/003.md"
+  }
+}

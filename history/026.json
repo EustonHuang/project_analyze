@@ -1,0 +1,37 @@
+{
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "为支撑 implement 002 的 git 发布链，在 plan root 新增 .gitignore，排除 .tmp/ 等 scratch 与 __pycache__/、.DS_Store，避免临时文件与缓存进入版本库。该文件经 git 提交（commit 6961be6）。"
+  },
+  "source": {
+    "user_prompt": "implement 002；我已建好 remote 仓库，请走完 git 所有流程并 push",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "ce44496e6d6c488a800433192a4bbf9c",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".gitignore"
+    ],
+    "change_summary": "新增 .gitignore（排除 .tmp/、__pycache__/、*.py[cod]、.DS_Store），支撑 implement 002 的 git 发布链。",
+    "sections_affected": [
+      "repository"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "因项目此前非 git 仓库，implement 002 发布链需先 git init；.gitignore 为该流程的配套配置。source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失），按 Q18 置 'unknown'；禁止 agent 自报 'Hy3'。",
+  "schema_version": "2.0",
+  "event_id": 26,
+  "recorded_at": "2026-10-17T11:26:42.905374+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "c2d6aef3e48bf8260c97664205d58e2b281d83c306e2fd2dca10125b73b40bca",
+    "plan_md_line_count": 28,
+    "source_doc": "architecture/002.md"
+  }
+}

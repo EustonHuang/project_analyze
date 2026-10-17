@@ -1,0 +1,41 @@
+{
+  "schema_version": "2.0",
+  "event_type": "qna_recorded",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "记录用户关于『为何在 rules 注入上下文的情况下仍明知故犯违反元描述规则』的提问与回答，双录至 questions/015.md。"
+  },
+  "source": {
+    "user_prompt": "我想要知道，为什么rules在这里，你却明知故犯？？？？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/015.md"
+    ],
+    "change_summary": "双录 Q15：规则在上下文却明知故犯的根因分析。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "qna": {
+    "question_ref": "Q15",
+    "question": "为什么 rules 在上下文里，你却明知故犯违反元描述规则？",
+    "answer_summary": "规则是建议式注入、无生成时硬校验；高压下满足用户的目标压过风格约束，且 self 误造了未提出的自证任务。",
+    "answer_location": "questions/015.md"
+  },
+  "correction": null,
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 31,
+  "recorded_at": "2026-10-17T12:20:31.895893+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "cbb08b837492fe77230ae93ee058036530a9a2b46f215eb0b02f488f4a1a34f8",
+    "plan_md_line_count": 192,
+    "source_doc": "architecture/003.md"
+  }
+}

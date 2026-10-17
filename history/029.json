@@ -1,0 +1,40 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户批评把'条件=菱形'写成唯一形状规则，暴露对流程图形状词汇的残缺理解。重写 003.md：确立完整节点→形状映射（圆角矩形/矩形/菱形/平行四边形/并行/循环容器），菱形只是决策类一条，其余节点同样必须有形状；统一目标、核心修正、渲染要求、交付物四处表述。"
+  },
+  "source": {
+    "user_prompt": "你自己看看你写的什么屎？？ 工作流里每个「是否……」都是决策节点，渲染时必须用菱形 你提到了条件用菱形，那么别的流程呢？？？条件用菱形只是他妈的我的一个例子，我想要和你解释一个workflow有条件这个东西，而条件在流程图中是用菱形表示的。你他妈你这么写你知道是什么意思吗？只有条件用菱形表示，别的workflow都不用形状表示，对吧？？？？ 你自己看看你他妈的写的什么玩意，把003从头到尾过一遍，给我修改！！！！！！！！！！！！！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/003.md"
+    ],
+    "change_summary": "修正 003.md 形状表述：条件=菱形只是形状映射表一条；新增完整节点→形状映射；统一目标/核心修正/渲染要求/交付物四处。",
+    "sections_affected": [
+      "目标",
+      "核心修正",
+      "渲染要求",
+      "交付物"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失），按 Q18 置 'unknown'。",
+  "event_id": 29,
+  "recorded_at": "2026-10-17T12:17:13.008503+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "e34a76311143cee8e643c257256319a4a0e6900e9b1c396d5aec8982b6dfdd07",
+    "plan_md_line_count": 192,
+    "source_doc": "architecture/003.md"
+  }
+}

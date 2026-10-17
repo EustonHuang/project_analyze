@@ -1,6 +1,6 @@
 {
-  "max_id": 14,
-  "revision": 14,
+  "max_id": 15,
+  "revision": 15,
   "briefs": [
     {
       "num": 1,
@@ -99,6 +99,13 @@
       "question": "调用 agent-trace-view 后 server 一直前台运行、卡住命令行，为什么？",
       "answer_summary": "根因是 server.py 末尾 HTTPServer(...).serve_forever() 是阻塞调用，作为前台 CLI 命令执行时永久占住命令行直到被强杀。修复：后台/分离启动、加空闲看门狗自退、提供 stop 指令，并在 skill 说明里写清如何停止。",
       "file": "questions/014.md"
+    },
+    {
+      "num": 15,
+      "question_ref": "Q15",
+      "question": "为什么 rules 在上下文里，你却明知故犯违反元描述规则？",
+      "answer_summary": "规则是建议式注入、无生成时硬校验；高压下满足用户的目标压过风格约束，且 self 误造了未提出的自证任务。",
+      "file": "questions/015.md"
     }
   ]
 }

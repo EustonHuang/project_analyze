@@ -11,17 +11,8 @@
   <header>
     <select id="traceSelect"><option>加载中...</option></select>
     <label>depth <input type="range" id="depth" min="1" max="6" value="6" /><span id="depthVal">6</span></label>
-    <label>kind
-      <select id="kind">
-        <option value="">全部</option>
-        <option value="parallel">parallel</option>
-        <option value="loop">loop</option>
-        <option value="branch">branch</option>
-        <option value="async">async</option>
-        <option value="spawn">spawn</option>
-        <option value="io">io</option>
-      </select>
-    </label>
+    <label><input type="checkbox" id="showDecisions" /> 只看决策(菱形)</label>
+    <label><input type="checkbox" id="showSources" /> 显示来源</label>
     <input id="search" placeholder="搜索..." />
     <button id="reload">刷新</button>
   </header>

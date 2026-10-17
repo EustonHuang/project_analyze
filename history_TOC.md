@@ -29,3 +29,10 @@
 - [023 · qna_recorded · 2026-10-17T11:01:44](history/023.json) — 记录 Q14：agent-trace-view server 前台阻塞命令行、需强杀的根因（serve_forever 阻塞调用，无后台化/退出机制）。
 - [024 · plan_modified · 2026-10-17T11:04:12](history/024.json) — 新建 architecture/002.md（agent-trace-view 渲染侧修复方案，覆盖 Q13/Q14）；architecture_index 新增 v2（latest_version=2，implemented_version=1）；重生成 architectur
 - [025 · implementation · 2026-10-17T11:22:10](history/025.json) — 实现 architecture/002：修复 agent-trace-view server 的 WEB 路径（Q13/404）与前台阻塞（Q14/后台守护+看门狗+--stop）；SKILL.md 更新用法；implemented_version 翻至 2。
+- [026 · plan_modified · 2026-10-17T11:26:42](history/026.json) — 新增 .gitignore（排除 .tmp/、__pycache__/、*.py[cod]、.DS_Store），支撑 implement 002 的 git 发布链。
+- [027 · plan_modified · 2026-10-17T11:55:59](history/027.json) — 新增 architecture/003.md：Agent 自身工作流追踪方案。明确追踪对象改为 Agent 系统级工作流；用菱形节点显式表达条件判断；要求每个节点附带 source（type/path/quote）。
+- [028 · plan_modified · 2026-10-17T12:14:03](history/028.json) — 在 003.md 新增「本方案与前序设计的关系」节，明确替代 001；node 定义中 source 升为必填强制字段并加 viewer 校验。
+- [029 · plan_modified · 2026-10-17T12:17:13](history/029.json) — 修正 003.md 形状表述：条件=菱形只是形状映射表一条；新增完整节点→形状映射；统一目标/核心修正/渲染要求/交付物四处。
+- [030 · plan_modified · 2026-10-17T12:18:38](history/030.json) — 删除 003.md 中三处元描述/澄清式旁白，违反 No Meta-Descriptions 与『禁止澄清式旁白』两条 user rule。
+- [031 · qna_recorded · 2026-10-17T12:20:31](history/031.json) — 双录 Q15：规则在上下文却明知故犯的根因分析。
+- [032 · plan_modified · 2026-10-17T12:30:15](history/032.json) — 落地 003：采集侧支持 agent_system_workflow 模型（强制 source + decision 分支），产出具体系统工作流 trace；渲染侧按形状映射表渲染全节点类型并展示来源。

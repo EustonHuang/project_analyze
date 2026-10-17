@@ -4,3 +4,4 @@
 
 > 由 `append_history.py gen-toc` 自动生成；每故障正文见 `issues/{id}/description.json`。
 
+- [001 · collision · open](issues/001/description.json) — 

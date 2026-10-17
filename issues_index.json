@@ -1,5 +1,13 @@
 {
-  "max_id": 0,
-  "revision": 0,
-  "briefs": []
+  "max_id": 1,
+  "revision": 1,
+  "briefs": [
+    {
+      "issue_id": 1,
+      "event_type": "collision",
+      "detected_at": "2026-10-17T12:19:49.445433+08:00",
+      "status": "open",
+      "file": "issues/001/description.json"
+    }
+  ]
 }

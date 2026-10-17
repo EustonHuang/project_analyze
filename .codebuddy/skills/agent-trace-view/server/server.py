@@ -45,6 +45,12 @@ def filter_trace(data, query):
     kinds = {k for k in q.get("kinds", [""])[0].split(",") if k}
     term = q.get("q", [""])[0].strip().lower()
 
+    # workflow model (architecture/003): phases of nodes with id-reference
+    # children / decision branches. Depth filtering does not apply naturally;
+    # pass through and let the frontend apply kind/search filters.
+    if "phases" in data:
+        return data
+
     def walk(nodes, d):
         out = []
         for n in nodes:

@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "用户批评只修补表面症状、未触及根因。补充 003.md：明确替代 001（前提错误而非修补）、source 升为必填强制字段并由 viewer 校验、现有 prompt trace 数据须重生为系统工作流 trace。"
+  },
+  "source": {
+    "user_prompt": "我之前的两个错误 还有呢？我告诉你不要头痛医头脚痛医脚 你怎么一点意识都没有？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "4383417c4fe2451abe26593e021611a4",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/003.md"
+    ],
+    "change_summary": "在 003.md 新增「本方案与前序设计的关系」节，明确替代 001；node 定义中 source 升为必填强制字段并加 viewer 校验。",
+    "sections_affected": [
+      "本方案与前序设计的关系",
+      "追踪数据模型"
+    ],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 取自平台可信信号失败（env CODEBUDDY_MODEL 缺失），按 Q18 置 'unknown'。",
+  "event_id": 28,
+  "recorded_at": "2026-10-17T12:14:03.250646+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "1d6ecf39498ee17ecde556b53b8899e1de7f1d67093963086561149f71de685a",
+    "plan_md_line_count": 194,
+    "source_doc": "architecture/003.md"
+  }
+}

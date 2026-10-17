@@ -15,12 +15,21 @@ description: 启动前后端 viewer 渲染 agent_traces/ 下的 trace JSON，交
 - 空闲自退：`--idle-timeout <秒>`（默认 600，0 关闭）——无请求超过阈值自动 `shutdown()`。
 
 ## 功能
-- 图视图：执行流图（缩放/平移/拖拽），并行=同层、循环=回边、分支=分叉。
-- 可折叠树：左侧大纲，逐层展开（depth 控制）。
-- 控制条：depth 滑块、kind 过滤、搜索框。
-- 详情面板：点节点看 detail。
+- 图视图：执行流图（缩放/平移/拖拽），按节点类型映射流程图形状（architecture/003 形状映射表）：
+  - `entry` / `exit` → 圆角矩形（terminator）
+  - `step` → 矩形（process）
+  - `decision` → 菱形（decision），出边标 `yes` / `no`
+  - `io` → 平行四边形（I/O）
+  - `parallel` / `loop` → 容器（loop 带虚线回边）
+- 可折叠树：左侧大纲，逐层展开。
+- 控制条：
+  - `只看决策(菱形)`：仅显示 `decision` 节点，快速看清所有条件分支。
+  - `显示来源`：节点标签附带 `source.path`。
+  - 搜索框。
+- 详情面板：点节点看 `detail` 与 `source`（type / path / quote）；`decision` 显示 yes/no 分支目标。
 
 ## 约定
 - 仅渲染，不修改 trace 文件。
+- 同时支持两种模型：`agent_system_workflow`（`phases` + `conditions`）与 legacy `prompt_trace`（`flow` + `triggers`）。
 - 依赖：Python 3 标准库（无需 pip 安装）；前端图库 Cytoscape.js 经 CDN 加载（需联网，离线时树视图仍可用）。
 - trace JSON 是采集与渲染之间唯一的契约接口。

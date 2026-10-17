@@ -1,0 +1,13 @@
+{
+  "issue_id": 1,
+  "event_type": "collision",
+  "description": "问答目标文件已存在。",
+  "detected_at": "2026-10-17T12:19:49.445433+08:00",
+  "intended_action": {},
+  "assets_refs": [
+    "intended_015.md",
+    "existing_015.md",
+    "index_snapshot.json"
+  ],
+  "status": "open"
+}

@@ -18,7 +18,8 @@ main { flex: 1; display: flex; min-height: 0; }
 #tree > ul { padding-left: 0; }
 #tree .node { cursor: pointer; display: inline-block; padding: 2px 4px; border-radius: 4px; }
 #tree .node:hover { background: #dbeafe; }
-#tree .entry { color: #1d4ed8; font-weight: 600; }
+#tree .entry, #tree .exit { color: #1d4ed8; font-weight: 600; }
+#tree .decision { color: #b45309; font-weight: 600; }
 #tree .parallel { color: #b45309; }
 #tree .loop { color: #6d28d9; }
 #tree .branch { color: #0f766e; }
@@ -27,3 +28,6 @@ main { flex: 1; display: flex; min-height: 0; }
 #detail h3 { margin-top: 0; }
 #detail .meta { color: #52606d; font-size: 12px; margin-bottom: 6px; }
 #detail pre { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #d2d6dc; padding: 8px; border-radius: 4px; }
+#detail .source { background: #eef2ff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 4px; margin-bottom: 8px; }
+#detail .source-head { font-weight: 600; color: #3730a3; margin-bottom: 4px; }
+#detail .source pre { background: #fff; border-color: #c7d2fe; }

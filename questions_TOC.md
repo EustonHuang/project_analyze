@@ -18,3 +18,4 @@
 - [Q12](questions/012.md) — 详细列出 ISO/IEC 25010（作为 Q11 分类外部校验锚）。
 - [Q13](questions/013.md) — agent-trace-view 打开 127.0.0.1:8765 返回 404，为什么？
 - [Q14](questions/014.md) — 调用 agent-trace-view 后 server 一直前台运行、卡住命令行，为什么？
+- [Q15](questions/015.md) — 为什么 rules 在上下文里，你却明知故犯违反元描述规则？

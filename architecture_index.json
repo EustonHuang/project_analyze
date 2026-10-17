@@ -1,7 +1,7 @@
 {
-  "implemented_version": 2,
-  "latest_version": 2,
-  "revision": 8,
+  "implemented_version": 3,
+  "latest_version": 3,
+  "revision": 10,
   "versions": [
     {
       "version": 1,
@@ -12,6 +12,11 @@
       "version": 2,
       "title": "agent-trace-view 渲染侧修复方案",
       "file": "architecture/002.md"
+    },
+    {
+      "version": 3,
+      "title": "Agent 自身工作流追踪方案",
+      "file": "architecture/003.md"
     }
   ]
 }

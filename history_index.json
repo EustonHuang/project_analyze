@@ -1,6 +1,6 @@
 {
-  "max_id": 25,
-  "revision": 25,
+  "max_id": 32,
+  "revision": 32,
   "briefs": [
     {
       "event_id": 1,
@@ -276,6 +276,83 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/025.json"
+    },
+    {
+      "event_id": 26,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T11:26:42.905374+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 .gitignore（排除 .tmp/、__pycache__/、*.py[cod]、.DS_Store），支撑 implement 002 的 git 发布链。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/026.json"
+    },
+    {
+      "event_id": 27,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T11:55:59.197040+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/003.md：Agent 自身工作流追踪方案。明确追踪对象改为 Agent 系统级工作流；用菱形节点显式表达条件判断；要求每个节点附带 source（type/path/quote）。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/027.json"
+    },
+    {
+      "event_id": 28,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:14:03.250646+08:00",
+      "actor_type": "ai",
+      "change_summary": "在 003.md 新增「本方案与前序设计的关系」节，明确替代 001；node 定义中 source 升为必填强制字段并加 viewer 校验。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/028.json"
+    },
+    {
+      "event_id": 29,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:17:13.008503+08:00",
+      "actor_type": "ai",
+      "change_summary": "修正 003.md 形状表述：条件=菱形只是形状映射表一条；新增完整节点→形状映射；统一目标/核心修正/渲染要求/交付物四处。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/029.json"
+    },
+    {
+      "event_id": 30,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:18:38.639670+08:00",
+      "actor_type": "ai",
+      "change_summary": "删除 003.md 中三处元描述/澄清式旁白，违反 No Meta-Descriptions 与『禁止澄清式旁白』两条 user rule。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/030.json"
+    },
+    {
+      "event_id": 31,
+      "event_type": "qna_recorded",
+      "recorded_at": "2026-10-17T12:20:31.895893+08:00",
+      "actor_type": "ai",
+      "change_summary": "双录 Q15：规则在上下文却明知故犯的根因分析。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/031.json"
+    },
+    {
+      "event_id": 32,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T12:30:15.571881+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 003：采集侧支持 agent_system_workflow 模型（强制 source + decision 分支），产出具体系统工作流 trace；渲染侧按形状映射表渲染全节点类型并展示来源。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/032.json"
     }
   ]
 }
