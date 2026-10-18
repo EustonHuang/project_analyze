@@ -1,6 +1,6 @@
 {
-  "max_id": 16,
-  "revision": 16,
+  "max_id": 17,
+  "revision": 17,
   "briefs": [
     {
       "num": 1,
@@ -113,6 +113,13 @@
       "question": "P1-P5 与 s1/n1/n10 这些节点 ID 到底是什么关系？P1 下的 s1/s2/s3 是不是步骤 1.1/1.2/1.3？为什么不同 phase 下节点 ID 命名不一样？",
       "answer_summary": "P1-P5 是顺序执行的 5 个平级阶段（siblings，非嵌套）；P1 内 s1/s2/s3 是 parallel 的平级节点，不是层级子步骤；s1/n1/n10 等 ID 是各 phase 作者独立命名的本地标签，无全局层级含义，结构由 children/yes_branch/no_branch 决定。",
       "file": "questions/016.md"
+    },
+    {
+      "num": 17,
+      "question_ref": "Q17",
+      "question": "project_analyze_flow.json 的设计思路是什么？有没有潜在问题？潜在的问题是什么？",
+      "answer_summary": "设计意图：把 architecture/003 的工作流实例化为 phases(顺序阶段)+nodes(步骤,带 source 溯源)+children(顺序下一步)/yes_no(决策分支)+conditions/assumptions。潜在问题：(1)children 命名暗示层级实为顺序，导致误解；(2)阶段衔接隐式、无连通校验；(3)节点 id 混乱无规范；(4)阶段非一等公民；(5)conditions 与 decision 重复无关联；(6)kind 无 schema 约束；(7)并行 sibling 无节点级标记；(8)环无显式 loop 构造；(9)source 重复；(10)节点 schema 无版本。优先修 children 改名、阶段顺序边+校验、id 规范。",
+      "file": "questions/017.md"
     }
   ]
 }

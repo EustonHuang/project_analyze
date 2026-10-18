@@ -20,3 +20,4 @@
 - [Q14](questions/014.md) — 调用 agent-trace-view 后 server 一直前台运行、卡住命令行，为什么？
 - [Q15](questions/015.md) — 为什么 rules 在上下文里，你却明知故犯违反元描述规则？
 - [Q16](questions/016.md) — P1-P5 与 s1/n1/n10 这些节点 ID 到底是什么关系？P1 下的 s1/s2/s3 是不是步骤 1.1/1.2/1.3？为什么不同 phase 下节点 ID 命名不一样？
+- [Q17](questions/017.md) — project_analyze_flow.json 的设计思路是什么？有没有潜在问题？潜在的问题是什么？
