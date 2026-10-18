@@ -1,6 +1,6 @@
 {
-  "max_id": 19,
-  "revision": 19,
+  "max_id": 20,
+  "revision": 20,
   "briefs": [
     {
       "num": 1,
@@ -134,6 +134,13 @@
       "question": "流程图（agent-trace-view 中的 Flow Graph）到底是什么？",
       "answer_summary": "流程图是用 Cytoscape.js 把 trace 控制流画成的有向图（非层级树）。数据来自 phases[]/nodes[]，buildGraph 把 children(下一步)/yes_no(决策)/loop 转成边。结构：顶层5个顺序阶段 P1-P5(siblings,靠阶段末节点children串链)；阶段内仍是siblings——P1 并行(s1/s2/s3)、P2-P5 顺序(children连接)。截至architecture/011默认完整渲染全部节点边、不再折叠(因sibling非父子)；入口在左侧面板『流程图』标签(与步骤树切换)；交互含缩放/平移/点节点联动来源+文件。已知缺口：P1-P5尚未渲染为图内节点(只作左侧树分组)；节点id命名混乱无规范。",
       "file": "questions/019.md"
+    },
+    {
+      "num": 20,
+      "question_ref": "Q20",
+      "question": "流程图的完整步骤类型是什么？本项目 trace 有没有覆盖所有类型？为什么之前剖析得很完整、真正实现却缺斤少两？",
+      "answer_summary": "完整流程图类型(questions/002):起止/处理/判断/流向线/循环/准备/子程序/IO/数据存储/文档/连接符/汇合/并行共13种,工具kind收敛为入口/触发/调用/并行/循环/分支/IO/异步/进程线程。实测trace仅用 entry/step/decision/exit 4种;viewer schema却定义了11种(多io/parallel/loop/trigger/branch/async/spawn),即设计层对齐、数据层缺斤少两。根因:1)schema与instance脱节无校验强制用对kind,实例化时所有节点偷填step;2)并行/循环降级到边和phase属性未落到节点kind,7个富类型成死schema;3)自己在Q2写'记时精简展时丰富'被过度执行致'展时'一半失效。结果只是退化版流程图:分不清IO、看不到并行分叉、看不到环。",
+      "file": "questions/020.md"
     }
   ]
 }

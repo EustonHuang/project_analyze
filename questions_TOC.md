@@ -23,3 +23,4 @@
 - [Q17](questions/017.md) — project_analyze_flow.json 的设计思路是什么？有没有潜在问题？潜在的问题是什么？
 - [Q18](questions/018.md) — 本次会话（agent-trace-view 流程图重构）AI 一五一十犯了哪些错误？请翻全部 history 逐条列出。
 - [Q19](questions/019.md) — 流程图（agent-trace-view 中的 Flow Graph）到底是什么？
+- [Q20](questions/020.md) — 流程图的完整步骤类型是什么？本项目 trace 有没有覆盖所有类型？为什么之前剖析得很完整、真正实现却缺斤少两？
