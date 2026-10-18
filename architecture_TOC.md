@@ -16,4 +16,5 @@
 - [v010 · agent-trace-view 流程图改为左侧面板 + 层级按需展开](architecture/010.md) — 状态：历史
 - [v011 · agent-trace-view 流程图应展示完整控制流，而非层级树](architecture/011.md) — 状态：历史
 - [v012 · 极简 trace 模型与流程图设计](architecture/012.md) — 状态：历史
-- [v013 · project_analyze 通用工作流 trace（修正 012 两处错误）](architecture/013.md) — 状态：待执行（已定义未落地）
+- [v013 · project_analyze 通用工作流 trace（修正 012 两处错误）](architecture/013.md) — 状态：历史
+- [v014 · 从根因修正 trace 格式：改 agent-trace skill + 修查看器高亮](architecture/014.md) — 状态：已落地
