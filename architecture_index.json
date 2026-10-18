@@ -1,7 +1,7 @@
 {
   "implemented_version": 13,
-  "latest_version": 12,
-  "revision": 27,
+  "latest_version": 13,
+  "revision": 28,
   "versions": [
     {
       "version": 1,
@@ -62,6 +62,11 @@
       "version": 12,
       "title": "极简 trace 模型与流程图设计",
       "file": "architecture/012.md"
+    },
+    {
+      "version": 13,
+      "title": "project_analyze 通用工作流 trace（修正 012 两处错误）",
+      "file": "architecture/013.md"
     }
   ]
 }

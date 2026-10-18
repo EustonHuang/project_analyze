@@ -67,3 +67,4 @@
 - [061 · correction · 2026-10-18T16:48:08](history/061.json) — 将 latest_version 从 11 修正为 12，revision 25→26，补录 versions[12]，并重新生成 architecture_TOC.md。
 - [062 · plan_modified · 2026-10-18T16:58:14](history/062.json) — 新增 architecture/013：通用 agent 会话工作流 trace，修正 012 的两处错误（gate 位置 + 去具体 prompt/skill 绑定）。
 - [063 · implementation · 2026-10-18T16:58:14](history/063.json) — 落地 013：trace 改为 15 节点通用工作流，gate 仅在末尾，无具体 prompt/skill 绑定。
+- [064 · correction · 2026-10-18T16:59:10](history/064.json) — 将 latest_version 从 12 修正为 13，revision 27→28，补录 versions[13]，并重新生成 architecture_TOC.md。
