@@ -1,7 +1,7 @@
 {
   "implemented_version": 9,
-  "latest_version": 8,
-  "revision": 19,
+  "latest_version": 9,
+  "revision": 20,
   "versions": [
     {
       "version": 1,
@@ -42,6 +42,11 @@
       "version": 8,
       "title": "agent-trace-view 流程图修复与 trace 来源精确化",
       "file": "architecture/008.md"
+    },
+    {
+      "version": 9,
+      "title": "agent-trace-view 流程图可用性重构",
+      "file": "architecture/009.md"
     }
   ]
 }
