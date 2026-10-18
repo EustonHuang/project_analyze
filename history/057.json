@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "set-implemented v11 后补全 architecture_index.json：latest_version 与 versions 数组未同步到 11，现修正并重新生成 TOC。"
+  },
+  "source": {
+    "user_prompt": "（set-implemented 后的 audit 发现 architecture_index.json 未完整更新，追加修正事件。）",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture_index.json",
+      "architecture_TOC.md"
+    ],
+    "change_summary": "将 latest_version 从 10 修正为 11，补录 versions[11]，并重新生成 architecture_TOC.md。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 56,
+    "reason": "set-implemented 仅更新 implemented_version，未同步 latest_version 与 versions 数组，导致索引与 architecture/011 不一致。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 57,
+  "recorded_at": "2026-10-18T15:37:12.034783+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "6e981ffb9d4ee8b46b9d835b5b9fd5f5171c7021f4a41189b20af2c8aa69470f",
+    "plan_md_line_count": 45,
+    "source_doc": "architecture/011.md"
+  }
+}

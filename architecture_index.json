@@ -1,7 +1,7 @@
 {
   "implemented_version": 11,
-  "latest_version": 10,
-  "revision": 23,
+  "latest_version": 11,
+  "revision": 24,
   "versions": [
     {
       "version": 1,
@@ -52,6 +52,11 @@
       "version": 10,
       "title": "agent-trace-view 流程图改为左侧面板 + 层级按需展开",
       "file": "architecture/010.md"
+    },
+    {
+      "version": 11,
+      "title": "agent-trace-view 流程图应展示完整控制流，而非层级树",
+      "file": "architecture/011.md"
     }
   ]
 }
