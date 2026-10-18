@@ -28,6 +28,10 @@ WEB = os.path.join(os.path.dirname(ROOT), "web")
 TRACE_DIR = "agent_traces"
 PID_FILE = os.path.join(tempfile.gettempdir(), "agent-trace-view.pid")
 
+# Populated in main() from CLI arguments / trace-dir parent.
+PROJECT_ROOT = os.path.normpath(os.getcwd())
+DEFAULT_TRACE = None
+
 last_activity = time.time()
 
 
@@ -87,7 +91,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not rel:
             self._json(400, {"error": "missing path"})
             return
-        root = os.path.normpath(os.getcwd())
+        root = PROJECT_ROOT
         if os.path.isabs(rel):
             fp = os.path.normpath(rel)
         else:
@@ -111,12 +115,26 @@ class Handler(SimpleHTTPRequestHandler):
         if p.path == "/api/file":
             self.api_file(p.query)
             return
+        if p.path == "/api/config":
+            self._json(200, {
+                "project_root": PROJECT_ROOT,
+                "default_trace": DEFAULT_TRACE,
+            })
+            return
         if p.path == "/api/traces":
             try:
                 files = [f for f in os.listdir(TRACE_DIR) if f.endswith(".json")]
             except OSError:
                 files = []
-            self._json(200, {"traces": sorted(files)})
+            if DEFAULT_TRACE is None and "project_analyze_flow.json" in files:
+                default = "project_analyze_flow.json"
+            elif DEFAULT_TRACE is not None and DEFAULT_TRACE in files:
+                default = DEFAULT_TRACE
+            elif files:
+                default = sorted(files)[0]
+            else:
+                default = None
+            self._json(200, {"traces": sorted(files), "default": default})
             return
         if p.path.startswith("/api/traces/"):
             name = urllib.parse.unquote(p.path[len("/api/traces/"):])
@@ -205,9 +223,15 @@ def watchdog(httpd, idle_timeout):
 
 
 def main():
-    global TRACE_DIR
+    global TRACE_DIR, PROJECT_ROOT, DEFAULT_TRACE
     ap = argparse.ArgumentParser()
     ap.add_argument("--trace-dir", default="agent_traces")
+    ap.add_argument("--project-root", default=None,
+                    help="root directory for resolving relative source paths "
+                         "(default: parent of --trace-dir)")
+    ap.add_argument("--default-trace", default=None,
+                    help="trace file selected by default on load "
+                         "(default: project_analyze_flow.json if present, else first alphabetically)")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--foreground", action="store_true",
@@ -222,7 +246,9 @@ def main():
         stop_daemon()
         return
 
-    TRACE_DIR = args.trace_dir
+    TRACE_DIR = os.path.abspath(args.trace_dir)
+    PROJECT_ROOT = os.path.normpath(args.project_root) if args.project_root else os.path.dirname(TRACE_DIR)
+    DEFAULT_TRACE = args.default_trace
     url = f"http://{args.host}:{args.port}"
 
     if not args.foreground:

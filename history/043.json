@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "纠正 history/041 的 recorded_at：agent 在临时事件文件预填占位时间 2026-10-17T00:00:00+08:00，append_history.py 对已存在字段 setdefault 不覆盖，导致索引/TOC 显示 00:00:00。"
+  },
+  "source": {
+    "user_prompt": "为什么history 中 041 042的时间戳是00???????????????????",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "24a80dad3afe4563bc79204ffa7bce75",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "history/041.json"
+    ],
+    "change_summary": "correction：纠正 041 的 recorded_at 占位值 00:00:00。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 41,
+    "reason": "recorded_at 被预填占位值（2026-10-17T00:00:00+08:00）覆盖了脚本真实盖章；脚本 setdefault 语义使预填值原样落盘。",
+    "detail": "041 实际记录时间在 2026-10-17 14:10 前后（+08:00）：下界为 architecture/006.md 写盘时刻，上界为发布 commit df4adc9（2026-10-17 14:12:47 +0800）。真实墙上时钟不可精确复原，以该区间为准；00:00:00 为无效占位值。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。引擎缺陷（setdefault 应改为强制盖章）另立 improvement。",
+  "event_id": 43,
+  "standard_version": "v0.8",
+  "recorded_at": "2026-10-17T14:16:05.024146+08:00",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "766671437c6447f0d766b9b3a167fd9e5488a7cc9d5d0d3d07d97255751aef16",
+    "plan_md_line_count": 49,
+    "source_doc": "architecture/006.md"
+  }
+}

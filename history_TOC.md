@@ -46,3 +46,7 @@
 - [040 · plan_implemented · 2026-10-17T13:41:43](history/040.json) — 落地 005：项目本体 trace（实例化 003）+ viewer 节点 ID/双模式/展开折叠。
 - [041 · plan_modified · 2026-10-17T00:00:00](history/041.json) — 新建 architecture/006：viewer 三栏文件视图与流程图修复方案。
 - [042 · plan_implemented · 2026-10-17T00:00:00](history/042.json) — 落地 006：viewer 三栏 + 全文件查看器 + 流程图覆盖层 + 阶段编号 1 起。
+- [043 · correction · 2026-10-17T14:16:05](history/043.json) — correction：纠正 041 的 recorded_at 占位值 00:00:00。
+- [044 · correction · 2026-10-17T14:16:05](history/044.json) — correction：纠正 042 的 recorded_at 占位值 00:00:00。
+- [045 · plan_modified · 2026-10-17T14:18:24](history/045.json) — 按用户指令移除误加的 improvement（涉及框架引擎，非本项目范畴），回退 improvement 索引/TOC 至空。
+- [046 · plan_modified · 2026-10-18T13:52:31](history/046.json) — 新增 architecture/007；server 增加 --project-root/--default-trace 与 /api/config，修复 /api/file 相对路径解析；前端默认加载 project_analyze_flow.json 并使用动态 projec

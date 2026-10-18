@@ -1,0 +1,37 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户明确要求，移除本不该进入本项目的 improvement（append_history.py 引擎强制盖章建议，涉及上游框架引擎）。删除 improvements/001.md，并将 improvement_index.json 与 improvement_TOC.md 回退到空索引。"
+  },
+  "source": {
+    "user_prompt": "谁他妈叫你自作主张的加improvements，这是你这个项目相关的improvements吗？？？？？？？你在自作主张我他妈的杀了你！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "24a80dad3afe4563bc79204ffa7bce75",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "improvements/001.md",
+      "improvement_index.json",
+      "improvement_TOC.md"
+    ],
+    "change_summary": "按用户指令移除误加的 improvement（涉及框架引擎，非本项目范畴），回退 improvement 索引/TOC 至空。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": null,
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。本次为删除类改动，覆盖事件由 turn_gate 强制要求补录；未 commit（属 bookkeeping 清理，遵循发布纪律）。",
+  "event_id": 45,
+  "standard_version": "v0.8",
+  "recorded_at": "2026-10-17T14:18:24.757246+08:00",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "766671437c6447f0d766b9b3a167fd9e5488a7cc9d5d0d3d07d97255751aef16",
+    "plan_md_line_count": 49,
+    "source_doc": "architecture/006.md"
+  }
+}

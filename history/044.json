@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "纠正 history/042 的 recorded_at：同 041，agent 预填占位时间被脚本 setdefault 原样保留。"
+  },
+  "source": {
+    "user_prompt": "为什么history 中 041 042的时间戳是00???????????????????",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "24a80dad3afe4563bc79204ffa7bce75",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "history/042.json"
+    ],
+    "change_summary": "correction：纠正 042 的 recorded_at 占位值 00:00:00。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 42,
+    "reason": "recorded_at 被预填占位值（2026-10-17T00:00:00+08:00）覆盖了脚本真实盖章；脚本 setdefault 语义使预填值原样落盘。",
+    "detail": "042 实际记录时间为 2026-10-17 14:12:47 +0800（发布 commit df4adc9）前数秒——set-implemented 的 publish 链紧随事件落盘执行。00:00:00 为无效占位值。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 44,
+  "standard_version": "v0.8",
+  "recorded_at": "2026-10-17T14:16:05.150538+08:00",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "766671437c6447f0d766b9b3a167fd9e5488a7cc9d5d0d3d07d97255751aef16",
+    "plan_md_line_count": 49,
+    "source_doc": "architecture/006.md"
+  }
+}

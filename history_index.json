@@ -1,6 +1,6 @@
 {
-  "max_id": 42,
-  "revision": 42,
+  "max_id": 46,
+  "revision": 46,
   "briefs": [
     {
       "event_id": 1,
@@ -463,6 +463,50 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/042.json"
+    },
+    {
+      "event_id": 43,
+      "event_type": "correction",
+      "recorded_at": "2026-10-17T14:16:05.024146+08:00",
+      "actor_type": "ai",
+      "change_summary": "correction：纠正 041 的 recorded_at 占位值 00:00:00。",
+      "is_correction": true,
+      "corrects_event_id": 41,
+      "standard_version": "v0.8",
+      "file": "history/043.json"
+    },
+    {
+      "event_id": 44,
+      "event_type": "correction",
+      "recorded_at": "2026-10-17T14:16:05.150538+08:00",
+      "actor_type": "ai",
+      "change_summary": "correction：纠正 042 的 recorded_at 占位值 00:00:00。",
+      "is_correction": true,
+      "corrects_event_id": 42,
+      "standard_version": "v0.8",
+      "file": "history/044.json"
+    },
+    {
+      "event_id": 45,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-17T14:18:24.757246+08:00",
+      "actor_type": "ai",
+      "change_summary": "按用户指令移除误加的 improvement（涉及框架引擎，非本项目范畴），回退 improvement 索引/TOC 至空。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/045.json"
+    },
+    {
+      "event_id": 46,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T13:52:31.411475+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/007；server 增加 --project-root/--default-trace 与 /api/config，修复 /api/file 相对路径解析；前端默认加载 project_analyze_flow.json 并使用动态 project_root 生成 IDE 链接；删除两个干扰 trace 文件。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/046.json"
     }
   ]
 }

@@ -4,6 +4,7 @@ let current = null;
 let selectedId = null;
 let fileCache = null;      // { path, content, start, end, isMd }
 let fileMode = "raw";      // raw | rendered
+let viewerConfig = null;   // { project_root, default_trace } from /api/config
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -172,7 +173,8 @@ function renderSource(n) {
     h.textContent = "来源 (" + src.type + ")"; box.appendChild(h);
     if (src.type === "file") {
       const loc = document.createElement("div"); loc.className = "src-loc";
-      const abs = src.path.startsWith("/") ? src.path : "/Users/euston/personal/project_analyze/" + src.path;
+      const root = (viewerConfig && viewerConfig.project_root) || "";
+      const abs = src.path.startsWith("/") ? src.path : (root ? root + "/" + src.path : src.path);
       loc.innerHTML = '<a href="vscode://file/' + abs + ":" + src.line_start + '" title="在 IDE 打开">' +
         esc(src.path) + " : " + src.line_start + "-" + src.line_end + "</a>";
       box.appendChild(loc);
@@ -333,10 +335,18 @@ function closeGraph() {
 
 // ---- load ----------------------------------------------------------------
 async function loadList() {
+  try {
+    viewerConfig = await api("/api/config");
+  } catch (e) {
+    viewerConfig = null;
+  }
   const data = await api("/api/traces");
   const sel = document.getElementById("traceSelect");
   sel.innerHTML = "";
   data.traces.forEach((t) => { const o = document.createElement("option"); o.value = t; o.textContent = t; sel.appendChild(o); });
+  if (data.default && Array.from(sel.options).some((o) => o.value === data.default)) {
+    sel.value = data.default;
+  }
   if (data.traces.length) loadTrace(); else document.getElementById("tree").textContent = "没有 trace 文件";
 }
 async function loadTrace() {

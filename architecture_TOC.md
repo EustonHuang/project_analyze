@@ -8,4 +8,4 @@
 - [v002 · agent-trace-view 渲染侧修复方案](architecture/002.md) — 状态：历史
 - [v003 · Agent 自身工作流追踪方案](architecture/003.md) — 状态：历史
 - [v004 · agent-trace-view 可用性与来源可追溯性改进方案](architecture/004.md) — 状态：历史
-- [v005 · project_analyze 项目本体追踪方案](architecture/005.md) — 状态：待执行（已定义未落地）
+- [v005 · project_analyze 项目本体追踪方案](architecture/005.md) — 状态：历史
