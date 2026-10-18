@@ -5,8 +5,11 @@ let selectedId = null;
 let fileCache = null;      // { path, content, start, end, isMd }
 let fileMode = "raw";      // raw | rendered
 let viewerConfig = null;   // { project_root, default_trace } from /api/config
-let graphCy = null;        // Cytoscape instance (kept private to avoid window.cy clashes)
+let graphCy = null;        // Cytoscape instance
 let currentView = "tree";  // "tree" | "graph"
+let expanded = new Set();  // node ids whose children are shown
+let nestedById = {};       // id -> raw node (incl. nested)
+let lastGraph = null;      // last built graph
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -40,17 +43,52 @@ const SHAPE_ICON = {
   start: "◉", end: "◉", process: "▭", decision: "◇",
 };
 
+// ---- build a nested id index + flatten to visible nodes ------------------
+function buildNestedIndex(nodes, acc) {
+  (nodes || []).forEach((n) => {
+    acc[n.id] = n;
+    if (Array.isArray(n.nodes)) buildNestedIndex(n.nodes, acc);
+  });
+}
+
+function firstVisibleId(id) {
+  let n = nestedById[id];
+  while (n && Array.isArray(n.nodes) && n.nodes.length && expanded.has(n.id)) {
+    n = n.nodes[0];
+  }
+  return n ? n.id : id;
+}
+
+function flatten(nodes, parentNext, depth, out) {
+  for (const n of (nodes || [])) {
+    const hasKids = Array.isArray(n.nodes) && n.nodes.length > 0;
+    const open = hasKids && expanded.has(n.id);
+    if (open) {
+      flatten(n.nodes, n.next, depth + 1, out);
+    } else {
+      const node = Object.assign({}, n);
+      // 嵌套子链的末节点 next=null 时，回落到父节点的 next（父被 children 取代）
+      if (node.next == null && parentNext != null) node.next = parentNext;
+      node._depth = depth;
+      out.push(node);
+    }
+  }
+}
+
 function buildGraph(data) {
-  const nodes = {}, edges = [], roots = [], parents = {};
-  const list = data.nodes || [];
-  list.forEach((n) => { nodes[n.id] = n; });
-  list.forEach((n) => {
+  buildNestedIndex(data.nodes || [], nestedById);
+  const flat = [];
+  flatten(data.nodes || [], null, 0, flat);
+  const nodes = {}, edges = [];
+  flat.forEach((n) => { nodes[n.id] = n; });
+  flat.forEach((n) => {
     const nx = n.next;
     if (nx == null) return;
     const push = (tgt, label) => {
       if (!tgt) return;
-      edges.push({ source: n.id, target: tgt, label: label || "" });
-      parents[tgt] = n.id;
+      const real = firstVisibleId(tgt);
+      if (!nodes[real]) return;
+      edges.push({ source: n.id, target: real, label: label || "" });
     };
     if (typeof nx === "string") push(nx, "");
     else if (Array.isArray(nx)) nx.forEach((e) => {
@@ -59,9 +97,10 @@ function buildGraph(data) {
     });
   });
   const hasIncoming = new Set(edges.map((e) => e.target));
-  list.forEach((n) => { if (!hasIncoming.has(n.id)) roots.push(n.id); });
-  if (!roots.length && list.length) roots.push(list[0].id);
-  return { nodes, edges, roots, parents };
+  const roots = [];
+  flat.forEach((n) => { if (!hasIncoming.has(n.id)) roots.push(n.id); });
+  if (!roots.length && flat.length) roots.push(flat[0].id);
+  return { nodes, edges, roots };
 }
 
 function render(g) {
@@ -71,20 +110,50 @@ function render(g) {
   if (n) select(n, false);
 }
 
-// ---- left: flat node list (no phase grouping) ----------------------------
+// ---- left: collapsible tree ----------------------------------------------
+function allParentIds() {
+  const s = new Set();
+  Object.values(nestedById).forEach((n) => {
+    if (Array.isArray(n.nodes) && n.nodes.length) s.add(n.id);
+  });
+  return s;
+}
+function subtreeMatches(n, term) {
+  if (JSON.stringify(n).toLowerCase().includes(term)) return true;
+  if (Array.isArray(n.nodes)) return n.nodes.some((c) => subtreeMatches(c, term));
+  return false;
+}
+
 function renderNav(g) {
   const root = document.getElementById("tree");
   root.innerHTML = "";
   const showDec = document.getElementById("showDecisions").checked;
   const term = document.getElementById("search").value.trim().toLowerCase();
-  const list = Object.values(g.nodes);
+  const eff = term ? allParentIds() : expanded;
+  renderNavLevel(current.nodes || [], root, 0, showDec, term, eff);
+}
 
-  list.forEach((n) => {
+function renderNavLevel(nodes, container, depth, showDec, term, eff) {
+  nodes.forEach((n) => {
+    const hasKids = Array.isArray(n.nodes) && n.nodes.length > 0;
     if (showDec && n.kind !== "decision") return;
-    if (term && !JSON.stringify(n).toLowerCase().includes(term)) return;
+    if (term && !subtreeMatches(n, term)) return;
 
     const row = document.createElement("div");
     row.className = "node-row kind-" + (n.kind || "process") + (n.id === selectedId ? " selected" : "");
+    row.style.marginLeft = (depth * 14) + "px";
+
+    const caret = document.createElement("span");
+    caret.className = "node-caret" + (hasKids ? "" : " empty");
+    caret.textContent = hasKids ? (eff.has(n.id) ? "▾" : "▸") : "";
+    caret.onclick = (e) => {
+      e.stopPropagation();
+      if (!hasKids) return;
+      if (expanded.has(n.id)) expanded.delete(n.id); else expanded.add(n.id);
+      rebuild();
+    };
+    row.appendChild(caret);
+
     const icon = document.createElement("span");
     icon.className = "node-icon"; icon.textContent = SHAPE_ICON[n.kind] || "▭";
     row.appendChild(icon);
@@ -107,9 +176,15 @@ function renderNav(g) {
       sp.className = "node-src"; sp.textContent = n.source.path;
       row.appendChild(sp);
     }
-    row.onclick = () => select(n, true);
-    root.appendChild(row);
+    row.onclick = () => select(findRaw(n.id), true);
+    container.appendChild(row);
+
+    if (hasKids && eff.has(n.id)) renderNavLevel(n.nodes, container, depth + 1, showDec, term, eff);
   });
+}
+
+function findRaw(id) {
+  return nestedById[id] || null;
 }
 
 // ---- selection: source inspector + file viewer ----------------------------
@@ -122,11 +197,10 @@ function select(n, syncNav) {
   });
   renderSource(n);
   showFile(n);
-  // Highlight in graph without switching away from graph view.
-  if (graphCy) {
+  if (graphCy && typeof graphCy.getElementById === "function") {
     graphCy.elements().removeClass("selected");
     const el = graphCy.getElementById(n.id);
-    if (el.length) el.addClass("selected");
+    if (el && el.length) el.addClass("selected");
   }
 }
 
@@ -266,7 +340,15 @@ function showGraphView() {
   document.getElementById("tabGraph").classList.add("active");
   document.getElementById("treeView").classList.add("hidden");
   document.getElementById("graphView").classList.remove("hidden");
-  renderGraph(buildGraph(current));
+  if (lastGraph) renderGraph(lastGraph);
+}
+
+// ---- rebuild (nav + graph) on expand/collapse/search/filter -----------------
+function rebuild() {
+  const g = buildGraph(current);
+  lastGraph = g;
+  renderNav(g);
+  if (currentView === "graph" && g) renderGraph(g);
 }
 
 // ---- graph panel ---------------------------------------------------------
@@ -277,16 +359,18 @@ function renderGraph(g) {
   }
   graphCy = null;
   if (!g) return;
+  lastGraph = g;
 
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
     const label = (n.content || n.kind || "process").split("\n")[0];
     const cls = ["key-" + (n.kind || "process")];
     if (id === selectedId) cls.push("selected");
+    if (nestedById[id] && Array.isArray(nestedById[id].nodes) && nestedById[id].nodes.length) cls.push("has-children");
     elements.push({ data: { id, label }, classes: cls.join(" ") });
   });
   g.edges.forEach((e) => {
-    if (e.loop) elements.push({ data: { id: e.source + ">self", source: e.source, target: e.source }, classes: "loop" });
+    if (e.source === e.target) elements.push({ data: { id: e.source + ">self", source: e.source, target: e.source }, classes: "loop" });
     else elements.push({ data: { id: e.source + ">" + e.target, source: e.source, target: e.target, label: e.label }, classes: "edge" + (e.label ? " branch" : "") });
   });
   if (typeof cytoscape === "undefined") {
@@ -327,6 +411,7 @@ function renderGraph(g) {
           "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
         ...kindStyles,
         { selector: "node.selected", style: { "border-color": "#facc15", "border-width": 4 } },
+        { selector: "node.has-children", style: { "border-style": "double", "border-width": 4, "border-color": "#16a34a" } },
         { selector: "edge", style: {
           width: 2, "line-color": "#64748b", "target-arrow-color": "#64748b", "target-arrow-shape": "triangle",
           "curve-style": "bezier", "font-size": 11, label: "data(label)",
@@ -337,11 +422,23 @@ function renderGraph(g) {
     });
 
     graphCy.on("tap", "node", (e) => {
-      const n = g.nodes[e.target.id()];
-      if (!n) return;
-      select(n, true);
-      graphCy.elements().removeClass("selected");
-      graphCy.getElementById(n.id).addClass("selected");
+      const id = e.target.id();
+      const raw = nestedById[id];
+      if (!raw) return;
+      if (Array.isArray(raw.nodes) && raw.nodes.length) {
+        if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+        rebuild();
+      }
+      const g2 = buildGraph(current);
+      lastGraph = g2;
+      if (g2.nodes[id]) {
+        select(g2.nodes[id], true);
+        if (graphCy && typeof graphCy.getElementById === "function") {
+          graphCy.elements().removeClass("selected");
+          const el = graphCy.getElementById(id);
+          if (el && el.length) el.addClass("selected");
+        }
+      }
     });
 
     graphCy.resize();
@@ -376,39 +473,25 @@ function graphFit() {
 function loadPanelSizes() {
   try {
     const saved = JSON.parse(localStorage.getItem("atv-panels") || "{}");
-    if (saved.tree) {
-      const el = document.getElementById("treePanel");
-      el.style.flex = "0 0 " + saved.tree + "px";
-    }
-    if (saved.source) {
-      const el = document.getElementById("sourcePanel");
-      el.style.flex = "0 0 " + saved.source + "px";
-    }
+    if (saved.tree) document.getElementById("treePanel").style.flex = "0 0 " + saved.tree + "px";
+    if (saved.source) document.getElementById("sourcePanel").style.flex = "0 0 " + saved.source + "px";
   } catch (_) {}
 }
 
 function savePanelSizes(tree, source) {
-  try {
-    const data = { tree, source };
-    localStorage.setItem("atv-panels", JSON.stringify(data));
-  } catch (_) {}
+  try { localStorage.setItem("atv-panels", JSON.stringify({ tree, source })); } catch (_) {}
 }
 
 function setupResizer(resizerId, prevId, nextId, key) {
   const resizer = document.getElementById(resizerId);
   if (!resizer) return;
-  let startX = 0;
-  let startPrev = 0;
-  let startNext = 0;
-
+  let startX = 0, startPrev = 0, startNext = 0;
   function onMove(e) {
     const dx = e.clientX - startX;
     const newPrev = Math.max(180, startPrev + dx);
     const newNext = Math.max(280, startNext - dx);
-    const prev = document.getElementById(prevId);
-    const next = document.getElementById(nextId);
-    prev.style.flex = "0 0 " + newPrev + "px";
-    next.style.flex = "0 0 " + newNext + "px";
+    document.getElementById(prevId).style.flex = "0 0 " + newPrev + "px";
+    document.getElementById(nextId).style.flex = "0 0 " + newNext + "px";
     if (key === "tree") savePanelSizes(newPrev, null);
     if (key === "source") {
       const treeW = document.getElementById("treePanel").getBoundingClientRect().width;
@@ -416,21 +499,17 @@ function setupResizer(resizerId, prevId, nextId, key) {
     }
     if (graphCy && typeof graphCy.resize === "function") graphCy.resize();
   }
-
   function onUp() {
     resizer.classList.remove("dragging");
     document.body.classList.remove("resizing");
     window.removeEventListener("mousemove", onMove);
     window.removeEventListener("mouseup", onUp);
   }
-
   resizer.addEventListener("mousedown", (e) => {
     e.preventDefault();
     startX = e.clientX;
-    const prev = document.getElementById(prevId);
-    const next = document.getElementById(nextId);
-    startPrev = prev.getBoundingClientRect().width;
-    startNext = next.getBoundingClientRect().width;
+    startPrev = document.getElementById(prevId).getBoundingClientRect().width;
+    startNext = document.getElementById(nextId).getBoundingClientRect().width;
     resizer.classList.add("dragging");
     document.body.classList.add("resizing");
     window.addEventListener("mousemove", onMove);
@@ -440,30 +519,25 @@ function setupResizer(resizerId, prevId, nextId, key) {
 
 // ---- load ----------------------------------------------------------------
 async function loadList() {
-  try {
-    viewerConfig = await api("/api/config");
-  } catch (e) {
-    viewerConfig = null;
-  }
+  try { viewerConfig = await api("/api/config"); } catch (e) { viewerConfig = null; }
   const data = await api("/api/traces");
   const sel = document.getElementById("traceSelect");
   sel.innerHTML = "";
   data.traces.forEach((t) => { const o = document.createElement("option"); o.value = t; o.textContent = t; sel.appendChild(o); });
-  if (data.default && Array.from(sel.options).some((o) => o.value === data.default)) {
-    sel.value = data.default;
-  }
+  if (data.default && Array.from(sel.options).some((o) => o.value === data.default)) sel.value = data.default;
   if (data.traces.length) loadTrace(); else document.getElementById("tree").textContent = "没有 trace 文件";
 }
 async function loadTrace() {
   const name = document.getElementById("traceSelect").value;
   if (!name) return;
   current = await api("/api/traces/" + encodeURIComponent(name) + "?" + params());
+  expanded = new Set();
   const firstEntry = (current.nodes || []).find((n) => n.kind === "start") || (current.nodes || [])[0];
   selectedId = (firstEntry || {}).id || null;
   const g = buildGraph(current);
+  lastGraph = g;
   renderNav(g);
   if (selectedId && g.nodes[selectedId]) select(g.nodes[selectedId], false);
-  else render(g);
   if (currentView === "graph") renderGraph(g);
 }
 
@@ -474,19 +548,17 @@ document.getElementById("graphZoomIn").onclick = () => graphZoom(graphCy.zoom() 
 document.getElementById("graphZoomOut").onclick = () => graphZoom(graphCy.zoom() / 1.2);
 document.getElementById("graphFit").onclick = graphFit;
 window.addEventListener("resize", () => {
-  if (graphCy && typeof graphCy.resize === "function" && typeof graphCy.fit === "function" &&
-      currentView === "graph") {
-    graphCy.resize();
-    graphCy.fit();
+  if (graphCy && typeof graphCy.resize === "function" && typeof graphCy.fit === "function" && currentView === "graph") {
+    graphCy.resize(); graphCy.fit();
   }
 });
 document.getElementById("mdRaw").onclick = () => { fileMode = "raw"; setMdButtons("raw"); renderFile(); };
 document.getElementById("mdRendered").onclick = () => { fileMode = "rendered"; setMdButtons("rendered"); renderFile(); };
 document.getElementById("traceSelect").onchange = loadTrace;
 document.getElementById("reload").onclick = loadTrace;
-document.getElementById("showDecisions").onchange = () => { renderNav(buildGraph(current || { nodes: {} })); };
-document.getElementById("showSources").onchange = () => { renderNav(buildGraph(current || { nodes: {} })); };
-document.getElementById("search").oninput = debounce(() => { renderNav(buildGraph(current || { nodes: {} })); }, 300);
+document.getElementById("showDecisions").onchange = () => rebuild();
+document.getElementById("showSources").onchange = () => rebuild();
+document.getElementById("search").oninput = debounce(() => rebuild(), 300);
 
 loadPanelSizes();
 setupResizer("resizerLeft", "treePanel", "sourcePanel", "tree");

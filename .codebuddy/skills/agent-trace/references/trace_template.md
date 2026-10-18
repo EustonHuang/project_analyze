@@ -47,9 +47,9 @@ trace 只有两层：`meta` + `nodes[]`。**不接受 `phases` / `flow` / `condi
 }
 ```
 
-## trace 到底示例（命令不是黑盒）
+## trace 到底示例（命令不是黑盒，每个自定义函数都展开）
 
-下面展示 `turn_gate begin` 如何展开为其内部关键 helper 节点：
+下面展示 `turn_gate begin` 如何用嵌套 `nodes[]` 展开为内部全部自定义函数；`save_state` 又嵌套了它调用的 `state_path()`（自定义函数，必须展开）。
 
 ```json
 {
@@ -57,27 +57,47 @@ trace 只有两层：`meta` + `nodes[]`。**不接受 `phases` / `flow` / `condi
     {
       "id": "2", "kind": "process",
       "content": "turn_gate begin 入口：准备建立本轮 session state",
-      "next": "2a",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 292, "line_end": 301, "quote": "def cmd_begin(args): ..." }
-    },
-    {
-      "id": "2a", "kind": "process",
-      "content": "session_id()：取 CODEBUDDY_SESSION_ID 或 fallback 到 local pid",
-      "next": "2b",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 43, "quote": "def session_id(): return os.environ.get(...) or ('local-%d' % os.getpid())" }
-    },
-    {
-      "id": "2b", "kind": "process",
-      "content": "baseline_max_id()：读取 history_index.json 的 max_id",
-      "next": "2c",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 67, "line_end": 74, "quote": "def baseline_max_id(): ... int(idx.get('max_id', 0))" }
-    },
-    {
-      "id": "2c", "kind": "process",
-      "content": "save_state(state)：原子写入 .codebuddy/hooks/.turn/<session>.json",
-      "next": "3",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 65, "quote": "def save_state(state): ... os.replace(tmp, state_path())" }
+      "next": "6",
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 292, "line_end": 301, "quote": "def cmd_begin(args): ..." },
+      "nodes": [
+        {
+          "id": "2a", "kind": "process",
+          "content": "session_id()：取 CODEBUDDY_SESSION_ID 或 fallback 到 local pid",
+          "next": "2b",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 43, "quote": "def session_id(): return os.environ.get(...) or ('local-%d' % os.getpid())" }
+        },
+        {
+          "id": "2b", "kind": "process",
+          "content": "baseline_max_id()：读取 history_index.json 的 max_id",
+          "next": "2c",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 67, "line_end": 74, "quote": "def baseline_max_id(): ... int(idx.get('max_id', 0))" }
+        },
+        {
+          "id": "2c", "kind": "process",
+          "content": "save_state(state)：原子写入 .codebuddy/hooks/.turn/<session>.json",
+          "next": "2d",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 65, "quote": "def save_state(state): ... os.replace(tmp, state_path())" },
+          "nodes": [
+            {
+              "id": "2c1", "kind": "process",
+              "content": "state_path()：拼接 .codebuddy/hooks/.turn/<session>.json 路径",
+              "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 47, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" }
+            }
+          ]
+        },
+        {
+          "id": "2d", "kind": "process",
+          "content": "print 本轮 begin 基线信息",
+          "next": null,
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 300, "line_end": 301, "quote": "print('turn_gate begin: baseline_max_id=%s ...')" }
+        }
+      ]
     }
   ]
 }
 ```
+
+- 顶层节点 `2` 是「总体步骤」，viewer 默认折叠显示其一行的 `content`。
+- `2.nodes` 是深入细节；点 caret / 图节点展开为 `2a→2b→2c(→2c1)→2d`，末节点 `2d.next=null` 回落到父 `2.next`（即 `6`）。
+- 库内部调用（`os.path.join` 的实现）不展开；但 `state_path()` 是你自己写的函数，必须作为节点存在。

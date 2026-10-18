@@ -1,6 +1,6 @@
 {
-  "max_id": 70,
-  "revision": 70,
+  "max_id": 72,
+  "revision": 72,
   "briefs": [
     {
       "event_id": 1,
@@ -771,6 +771,28 @@
       "corrects_event_id": 69,
       "standard_version": "v0.8",
       "file": "history/070.json"
+    },
+    {
+      "event_id": 71,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T21:57:59.516052+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/016：嵌套 children 模型 + 展开/折叠 + 每个自定义函数都节点。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/071.json"
+    },
+    {
+      "event_id": 72,
+      "event_type": "implementation",
+      "recorded_at": "2026-10-18T21:57:59.600299+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 016：skill 加嵌套+折叠规则；viewer 支持展开/折叠；trace 完整展开 turn_gate 自定义函数。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/072.json"
     }
   ]
 }

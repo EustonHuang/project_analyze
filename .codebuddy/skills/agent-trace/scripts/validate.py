@@ -15,7 +15,7 @@ import json
 KINDS = {"start", "process", "decision", "end"}
 
 
-def validate_node(node, path, ids):
+def validate_node(node, path, ids, depth=0):
     ok = True
     if not isinstance(node, dict):
         print(f"ERROR: {path} 不是对象")
@@ -57,8 +57,10 @@ def validate_node(node, path, ids):
     # next
     nx = node.get("next")
     if nx is None:
-        if node.get("kind") != "end":
-            print(f"ERROR: {path} next 为 null 但 kind 非 end")
+        # 顶层（depth==0）非 end 节点必须显式 next；嵌套节点的 next=null 合法——
+        # 渲染时回落到父节点的 next（父被 children 取代，末子承接入边、末子出边接父 next）。
+        if node.get("kind") != "end" and depth == 0:
+            print(f"ERROR: {path} next 为 null 但 kind 非 end（顶层节点必须有后继）")
             ok = False
     elif isinstance(nx, str):
         if ids is not None and nx not in ids:
@@ -78,6 +80,34 @@ def validate_node(node, path, ids):
     else:
         print(f"ERROR: {path} next 类型非法（需 string/array/null）")
         ok = False
+
+    # 递归校验嵌套 children（展开/折叠）
+    kids = node.get("nodes")
+    if kids is not None:
+        if not isinstance(kids, list) or not kids:
+            print(f"ERROR: {path}.nodes 非数组或空")
+            ok = False
+        else:
+            for i, c in enumerate(kids):
+                if not validate_node(c, f"{path}.nodes[{i}]", ids, depth + 1):
+                    ok = False
+    return ok
+
+
+def collect_ids(nodes, acc):
+    for n in nodes:
+        if isinstance(n, dict) and n.get("id"):
+            acc.add(n["id"])
+        kids = n.get("nodes") if isinstance(n, dict) else None
+        if isinstance(kids, list):
+            collect_ids(kids, acc)
+
+
+def validate_top(nodes, path_prefix):
+    ok = True
+    for i, n in enumerate(nodes):
+        if not validate_node(n, f"{path_prefix}[{i}]", None):
+            ok = False
     return ok
 
 
@@ -98,9 +128,7 @@ def main():
 
     ok = True
     ids = set()
-    for n in t["nodes"]:
-        if isinstance(n, dict) and n.get("id"):
-            ids.add(n["id"])
+    collect_ids(t["nodes"], ids)
     for i, n in enumerate(t["nodes"]):
         if not validate_node(n, f"nodes[{i}]", ids):
             ok = False
@@ -114,7 +142,7 @@ def main():
         ok = False
 
     if ok:
-        print(f"OK: trace 结构合法（nodes 模型，{len(t['nodes'])} 节点）")
+        print(f"OK: trace 结构合法（nodes 模型，顶层 {len(t['nodes'])} 组，含嵌套子节点共 {len(ids)} 个）")
     sys.exit(0 if ok else 1)
 
 

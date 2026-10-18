@@ -46,6 +46,8 @@ main { flex: 1; display: flex; min-height: 0; }
 }
 .node-row:hover { background: #dbeafe; }
 .node-row.selected { background: #2563eb; color: #fff; }
+.node-caret { width: 14px; text-align: center; color: #16a34a; font-size: 11px; cursor: pointer; user-select: none; flex: 0 0 auto; }
+.node-caret.empty { cursor: default; color: transparent; }
 .node-icon { font-size: 13px; width: 16px; text-align: center; }
 .node-id { font-size: 11px; font-weight: 700; color: #6b7280; background: #eef2ff; padding: 0 4px; border-radius: 3px; }
 .node-row.selected .node-id { background: #1e40af; color: #dbeafe; }

@@ -38,20 +38,23 @@ trace 只有两层：`meta` + `nodes[]`。每个节点：
 2. 按执行顺序列 `nodes[]`，每个节点填 `kind` / `content` / `next` / `source`。
 3. `decision` 节点用 `next` 数组表达 yes/no 分支；并行 / 循环同样用 `next` 表达，无需特殊 `kind`。
 4. 每个节点必须带来源（file 行号或 system_prompt section），否则视为非法 trace。
-5. 跑 `scripts/validate.py` 校验（nodes 模型）。
+5. 跑 `scripts/validate.py` 校验（nodes 模型，递归校验嵌套节点）。
 6. 告诉用户文件路径，并提示用 `agent-trace-view` skill 查看。
 
-## trace 到底：命令不是黑盒
-追踪一个顶层命令或动作时，**如果它内部调用了对流程状态有实质影响的 helper，必须继续把这些 helper 也作为 `process` 节点展开**，并指向 helper 函数的真实行号。例如 `turn_gate begin` 不是单个节点，而要展开为：
+## 两条硬规则（不可妥协）
 
-- `cmd_begin` 入口；
-- `session_id()` —— 确定会话标识；
-- `baseline_max_id()` —— 读取当前 max_id；
-- `save_state(state)` —— 原子写入 `.codebuddy/hooks/.turn/<session>.json`。
+### 规则 A：trace 到底 —— 每个自定义函数都是节点
+追踪一个命令时，把它执行路径上**所有自定义函数**都列为节点（含库调用链上你自己的 helper）。判断标准：
+- **你自己写的函数**（如 `save_state`、`state_path`、`load_turngateignore_lines`、`_glob_translate`）→ 必须有节点，并指向真实行号。
+- **库内部函数**（`os.path.join`、`json.load`、`subprocess.run`、`pandas.read_csv` 等第三方包实现）→ 不展开。
+- 若某自定义函数**从未被本次执行路径触达**，视为死代码：应删掉它以收敛规模，**不要**靠省略 trace 来糊弄。节点数量多是「代码抽象过多」的信号，治本是删函数，不是省节点。
 
-同理，`turn_gate record` 要展开 `load_state()`、路径提取、`in_plan()`/`norm_rel()`/`is_ignored()`、保存/同步；`turn_gate end` 要展开 `load_state()`、`_new_event_targets()`。
+### 规则 B：可折叠 —— 总体步骤 ↔ 深入细节
+- 节点可嵌套 `nodes[]`（children，递归）。顶层节点是「总体步骤」；带 `nodes[]` 的节点默认在 viewer 中折叠，用户点一下再深入其 helper，再点收起。
+- `next` 在同层内串接；嵌套子节点最后一个 `next` 为 `null` 时，回落到父节点的 `next`（父节点展开后由 children 取代，首 child 承接入边、末 child 出边接到父 `next`）。
 
-不要停在入口函数；用户对照源码时，trace 必须能「钻」到最底层的关键状态变化点。
+## trace 到底示例
+`turn_gate begin` 不是单个节点，而展开为：入口 → `session_id()` → `baseline_max_id()` → `save_state(state)`（→ `state_path()`）→ 打印基线。同理 `turn_gate record` / `turn_gate end` 也要一路展开到最底层自定义函数。
 
 ## trace 一个项目本体（实例化本项目 workflow）
 把本仓库作为方法论项目，用其真实文件 + 行号实例化通用工作流：
