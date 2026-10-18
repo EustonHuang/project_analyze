@@ -52,3 +52,4 @@
 - [046 · plan_modified · 2026-10-18T13:52:31](history/046.json) — 新增 architecture/007；server 增加 --project-root/--default-trace 与 /api/config，修复 /api/file 相对路径解析；前端默认加载 project_analyze_flow.json 并使用动态 projec
 - [047 · correction · 2026-10-18T13:53:45](history/047.json) — 将 latest_version 从 6 修正为 7，并补录 versions[6] 与 versions[7] 条目。
 - [048 · plan_modified · 2026-10-18T14:13:26](history/048.json) — 新增 architecture/008；修复流程图延迟渲染、简化节点标签、合并 kind 样式、增加 resize 处理；重写 project_analyze_flow.json，使所有 file 来源指向实际代码/配置行（如 turn_gate.py cmd_end、setti
+- [049 · correction · 2026-10-18T14:14:13](history/049.json) — 将 latest_version 从 7 修正为 8，补录 versions[8]，并重新生成 architecture_TOC.md。

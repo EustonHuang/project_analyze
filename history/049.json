@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "set-implemented 后补全 architecture_index.json：latest_version 与 versions 数组未同步到 8，现手工修正并重新生成 TOC。"
+  },
+  "source": {
+    "user_prompt": "（set-implemented 后的 audit 发现 architecture_index.json 未完整更新，追加修正事件。）",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture_index.json",
+      "architecture_TOC.md"
+    ],
+    "change_summary": "将 latest_version 从 7 修正为 8，补录 versions[8]，并重新生成 architecture_TOC.md。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 48,
+    "reason": "set-implemented 仅更新 implemented_version，未同步 latest_version 与 versions 数组，导致索引与 architecture/008 不一致。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 49,
+  "recorded_at": "2026-10-18T14:14:13.871166+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "37def11624eecbf1f162d0ac2a2860ee56f1fbd4551e2f5bc47c9464d36874f1",
+    "plan_md_line_count": 48,
+    "source_doc": "architecture/008.md"
+  }
+}
