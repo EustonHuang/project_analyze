@@ -16,18 +16,30 @@
     <label><input type="checkbox" id="showSources" checked /> 显示来源路径</label>
     <input id="search" placeholder="搜索节点..." />
     <button id="reload">刷新</button>
-    <button id="toggleGraph" title="打开/关闭流程图覆盖层">流程图</button>
   </header>
   <main>
     <section id="treePanel">
       <div id="tree"></div>
     </section>
+    <div class="resizer" id="resizerLeft"></div>
     <section id="sourcePanel">
+      <div id="middleTabs">
+        <button id="tabSource" class="tab-btn active">来源详情</button>
+        <button id="tabGraph" class="tab-btn">流程图</button>
+      </div>
       <div id="sourceView">
-        <h3>来源详情</h3>
         <div id="sourceBody">在左侧选择一个节点，查看它的来源与引用。</div>
       </div>
+      <div id="graphView" class="hidden">
+        <div id="graphToolbar">
+          <button id="graphZoomIn" title="放大">+</button>
+          <button id="graphZoomOut" title="缩小">-</button>
+          <button id="graphFit" title="适应窗口">⟲ 适应</button>
+        </div>
+        <div id="cy"></div>
+      </div>
     </section>
+    <div class="resizer" id="resizerRight"></div>
     <section id="filePanel">
       <div id="fileHead">
         <span id="fileTitle">文件查看器</span>
@@ -39,13 +51,6 @@
       <div id="fileBody">选中节点后在此显示整个来源文件。</div>
     </section>
   </main>
-  <div id="graphOverlay">
-    <div id="graphBar">
-      <span>流程图</span>
-      <button id="closeGraph">✕ 关闭 (Esc)</button>
-    </div>
-    <div id="cy"></div>
-  </div>
   <script src="app.js"></script>
 </body>
 </html>

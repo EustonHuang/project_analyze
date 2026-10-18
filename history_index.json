@@ -1,6 +1,6 @@
 {
-  "max_id": 51,
-  "revision": 51,
+  "max_id": 52,
+  "revision": 52,
   "briefs": [
     {
       "event_id": 1,
@@ -562,6 +562,17 @@
       "corrects_event_id": 50,
       "standard_version": "v0.8",
       "file": "history/051.json"
+    },
+    {
+      "event_id": 52,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T15:08:02.372423+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/009；中间面板改为「来源详情/流程图」标签页；移除全屏流程图覆盖层；Cytoscape 节点放大到 180×70、字体 13px 并启用滚轮缩放/拖拽画布；增加放大/缩小/适应工具栏；点击图节点自动切回来源详情显示详情；左右与右侧新增可拖动分隔线，宽度保存到 localStorage。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/052.json"
     }
   ]
 }

@@ -16,10 +16,10 @@ main { flex: 1; display: flex; min-height: 0; }
 
 /* left: phase navigator */
 #treePanel {
-  width: 280px; min-width: 180px; overflow: auto;
+  flex: 0 0 280px; min-width: 180px; overflow: auto;
   border-right: 1px solid #d2d6dc; background: #f8fafc; padding: 8px;
 }
-#treePanel.collapsed { width: 0; min-width: 0; padding: 0; border: none; overflow: hidden; }
+#treePanel.collapsed { width: 0; min-width: 0; padding: 0; border: none; overflow: hidden; flex-basis: 0 !important; }
 .phase-block { margin-bottom: 12px; }
 .phase-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; cursor: pointer; user-select: none; }
 .phase-head:hover { background: #eef2ff; }
@@ -50,13 +50,36 @@ main { flex: 1; display: flex; min-height: 0; }
 }
 .node-row.selected .node-src { background: #1e40af; color: #dbeafe; }
 
-/* middle: source inspector */
-#sourcePanel {
-  flex: 1; min-width: 0; overflow: auto; padding: 16px 20px;
-  background: #fff; border-right: 1px solid #d2d6dc;
+/* resizers */
+.resizer {
+  flex: 0 0 6px;
+  background: #e2e8f0;
+  cursor: col-resize;
+  border-left: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+  transition: background 0.15s;
 }
+.resizer:hover, .resizer.dragging { background: #94a3b8; }
+
+/* middle: source inspector / flow graph */
+#sourcePanel {
+  flex: 1; min-width: 280px; overflow: hidden;
+  background: #fff; border-right: 1px solid #d2d6dc;
+  display: flex; flex-direction: column;
+}
+#middleTabs {
+  display: flex; gap: 4px;
+  padding: 6px 12px; background: #f1f5f9; border-bottom: 1px solid #d2d6dc;
+}
+.tab-btn {
+  padding: 4px 12px; border-radius: 4px; border: 1px solid #cbd5e1;
+  background: #fff; color: #334155; cursor: pointer; font-size: 13px;
+}
+.tab-btn:hover { background: #f8fafc; }
+.tab-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+#sourceView { flex: 1; overflow: auto; padding: 16px 20px; }
 #sourceView h3 { margin: 0 0 12px; color: #111827; font-size: 15px; }
-#sourceView { height: 100%; }
 #sourceBody h4 { margin: 0 0 8px; font-size: 16px; color: #111827; }
 .src-kind {
   display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
@@ -74,8 +97,23 @@ main { flex: 1; display: flex; min-height: 0; }
 .src-quote { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #c7d2fe; padding: 8px; border-radius: 4px; font-size: 12px; color: #1e293b; }
 .src-branch { margin-top: 8px; font-size: 13px; color: #9a3412; font-weight: 600; }
 
+#graphView { flex: 1; display: flex; flex-direction: column; position: relative; min-height: 0; }
+#graphView.hidden { display: none; }
+#graphToolbar {
+  position: absolute; top: 8px; right: 8px; z-index: 10;
+  display: flex; gap: 4px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 6px;
+  border: 1px solid #d2d6dc; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+#graphToolbar button {
+  padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1;
+  background: #fff; color: #334155; cursor: pointer; font-size: 13px;
+}
+#graphToolbar button:hover { background: #f1f5f9; }
+#cy { flex: 1; min-height: 0; width: 100%; background: #f8fafc; position: relative; }
+.graph-fallback { padding: 16px; color: #52606d; }
+
 /* right: file viewer (whole source file) */
-#filePanel { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fff; }
+#filePanel { flex: 1; min-width: 280px; display: flex; flex-direction: column; background: #fff; }
 #fileHead {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 8px 12px; background: #1f2933; color: #e4e7eb;
@@ -107,24 +145,9 @@ main { flex: 1; display: flex; min-height: 0; }
 .file-md table { border-collapse: collapse; }
 .file-md th, .file-md td { border: 1px solid #d2d6dc; padding: 4px 8px; }
 
-/* graph overlay (flowchart) */
-#graphOverlay {
-  position: fixed; inset: 0; z-index: 50; display: none;
-  background: rgba(15, 23, 42, 0.55);
-}
-#graphOverlay.open { display: flex; flex-direction: column; }
-#graphBar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; background: #1f2933; color: #e4e7eb; font-weight: 600;
-}
-#graphBar button {
-  padding: 4px 10px; border-radius: 4px; border: 1px solid #3e4c59; background: #323f4b;
-  color: #e4e7eb; cursor: pointer;
-}
-#graphBar button:hover { background: #3e4c59; }
-#cy { flex: 1; min-height: 0; width: 100%; background: #f8fafc; position: relative; }
-.graph-fallback { padding: 16px; color: #52606d; }
-
 .node-row.kind-decision .node-icon { color: #d97706; }
 .node-row.kind-entry .node-icon, .node-row.kind-exit .node-icon { color: #1d4ed8; }
 .node-row.kind-io .node-icon { color: #16a085; }
+
+body.resizing { user-select: none; }
+body.resizing iframe { pointer-events: none; }

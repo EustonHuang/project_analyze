@@ -6,6 +6,7 @@ let fileCache = null;      // { path, content, start, end, isMd }
 let fileMode = "raw";      // raw | rendered
 let viewerConfig = null;   // { project_root, default_trace } from /api/config
 let graphCy = null;        // Cytoscape instance (kept private to avoid window.cy clashes)
+let currentView = "source"; // "source" | "graph"
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -154,6 +155,7 @@ function select(n, scrollNav) {
   });
   renderSource(n);
   showFile(n);
+  if (scrollNav && currentView === "graph") showSource();
 }
 
 function renderSource(n) {
@@ -274,7 +276,29 @@ function renderFile() {
   else body.scrollTop = 0;
 }
 
-// ---- graph overlay -------------------------------------------------------
+// ---- middle: source / graph tab switching ---------------------------------
+function showSource() {
+  currentView = "source";
+  document.getElementById("tabSource").classList.add("active");
+  document.getElementById("tabGraph").classList.remove("active");
+  document.getElementById("sourceView").classList.remove("hidden");
+  document.getElementById("graphView").classList.add("hidden");
+}
+
+function showGraph() {
+  currentView = "graph";
+  document.getElementById("tabSource").classList.remove("active");
+  document.getElementById("tabGraph").classList.add("active");
+  document.getElementById("sourceView").classList.add("hidden");
+  document.getElementById("graphView").classList.remove("hidden");
+  renderGraph(buildGraph(current));
+}
+
+function toggleGraph() {
+  if (currentView === "graph") showSource(); else showGraph();
+}
+
+// ---- graph panel ---------------------------------------------------------
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (graphCy && typeof graphCy.destroy === "function") {
@@ -316,16 +340,20 @@ function renderGraph(g) {
     graphCy = cytoscape({
       container,
       elements,
+      userZoomingEnabled: true,
+      userPanningEnabled: true,
+      wheelSensitivity: 0.3,
+      boxSelectionEnabled: false,
       style: [
         { selector: "node", style: {
-          label: "data(label)", "text-wrap": "wrap", "text-max-width": 130,
-          "background-color": "#4a90d9", color: "#fff", "font-size": 10,
-          "text-valign": "center", "text-halign": "center", width: 120, height: 50,
+          label: "data(label)", "text-wrap": "wrap", "text-max-width": 170,
+          "background-color": "#4a90d9", color: "#fff", "font-size": 13,
+          "text-valign": "center", "text-halign": "center", width: 180, height: 70,
           "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
         ...kindStyles,
         { selector: "edge", style: {
-          width: 2, "line-color": "#999", "target-arrow-color": "#999", "target-arrow-shape": "triangle",
-          "curve-style": "bezier", "font-size": 9, label: "data(label)",
+          width: 3, "line-color": "#64748b", "target-arrow-color": "#64748b", "target-arrow-shape": "triangle",
+          "curve-style": "bezier", "font-size": 12, label: "data(label)",
           "text-rotation": "autorotate", color: "#b45309" } },
         { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309" } },
         { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
@@ -333,19 +361,22 @@ function renderGraph(g) {
     });
     graphCy.on("tap", "node", (e) => {
       const n = g.nodes[e.target.id()];
-      if (n) select(n, true);
+      if (n) {
+        select(n, true);
+        graphCy.$id(n.id).addClass("selected");
+      }
     });
     graphCy.resize();
     const layout = graphCy.layout({
       name: "breadthfirst",
       directed: true,
-      padding: 20,
+      padding: 30,
       fit: true,
       animate: false,
     });
     layout.on("layoutstop", () => {
       if (graphCy && typeof graphCy.fit === "function") {
-        graphCy.fit(graphCy.elements(), 20);
+        graphCy.fit(graphCy.elements(), 30);
       }
     });
     layout.run();
@@ -354,13 +385,81 @@ function renderGraph(g) {
   setTimeout(doRender, 100);
 }
 
-function openGraph() {
-  if (!current) return;
-  document.getElementById("graphOverlay").classList.add("open");
-  renderGraph(buildGraph(current));
+function graphZoom(level) {
+  if (!graphCy || typeof graphCy.zoom !== "function") return;
+  graphCy.zoom(level);
+  graphCy.center();
 }
-function closeGraph() {
-  document.getElementById("graphOverlay").classList.remove("open");
+
+function graphFit() {
+  if (!graphCy || typeof graphCy.fit !== "function") return;
+  graphCy.fit(graphCy.elements(), 30);
+}
+
+// ---- resizable panels ----------------------------------------------------
+function loadPanelSizes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("atv-panels") || "{}");
+    if (saved.tree) {
+      const el = document.getElementById("treePanel");
+      el.style.flex = "0 0 " + saved.tree + "px";
+    }
+    if (saved.source) {
+      const el = document.getElementById("sourcePanel");
+      el.style.flex = "0 0 " + saved.source + "px";
+    }
+  } catch (_) {}
+}
+
+function savePanelSizes(tree, source) {
+  try {
+    const data = { tree, source };
+    localStorage.setItem("atv-panels", JSON.stringify(data));
+  } catch (_) {}
+}
+
+function setupResizer(resizerId, prevId, nextId, key) {
+  const resizer = document.getElementById(resizerId);
+  if (!resizer) return;
+  let startX = 0;
+  let startPrev = 0;
+  let startNext = 0;
+
+  function onMove(e) {
+    const dx = e.clientX - startX;
+    const newPrev = Math.max(180, startPrev + dx);
+    const newNext = Math.max(280, startNext - dx);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    prev.style.flex = "0 0 " + newPrev + "px";
+    next.style.flex = "0 0 " + newNext + "px";
+    if (key === "tree") savePanelSizes(newPrev, null);
+    if (key === "source") {
+      const treeW = document.getElementById("treePanel").getBoundingClientRect().width;
+      savePanelSizes(treeW, newPrev);
+    }
+    if (graphCy && typeof graphCy.resize === "function") graphCy.resize();
+  }
+
+  function onUp() {
+    resizer.classList.remove("dragging");
+    document.body.classList.remove("resizing");
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+  }
+
+  resizer.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    startPrev = prev.getBoundingClientRect().width;
+    startNext = next.getBoundingClientRect().width;
+    resizer.classList.add("dragging");
+    document.body.classList.add("resizing");
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  });
 }
 
 // ---- load ----------------------------------------------------------------
@@ -391,19 +490,20 @@ async function loadTrace() {
   renderNav(g);
   if (selectedId && g.nodes[selectedId]) select(g.nodes[selectedId], false);
   else render(g);
-  if (document.getElementById("graphOverlay").classList.contains("open")) renderGraph(g);
+  if (currentView === "graph") renderGraph(g);
 }
 
+// ---- event wiring --------------------------------------------------------
 document.getElementById("toggleTree").onclick = () => document.getElementById("treePanel").classList.toggle("collapsed");
-document.getElementById("toggleGraph").onclick = () => {
-  const ov = document.getElementById("graphOverlay");
-  if (ov.classList.contains("open")) closeGraph(); else openGraph();
-};
-document.getElementById("closeGraph").onclick = closeGraph;
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGraph(); });
+document.getElementById("tabSource").onclick = showSource;
+document.getElementById("tabGraph").onclick = showGraph;
+document.getElementById("graphZoomIn").onclick = () => graphZoom(graphCy.zoom() * 1.2);
+document.getElementById("graphZoomOut").onclick = () => graphZoom(graphCy.zoom() / 1.2);
+document.getElementById("graphFit").onclick = graphFit;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentView === "graph") showSource(); });
 window.addEventListener("resize", () => {
   if (graphCy && typeof graphCy.resize === "function" && typeof graphCy.fit === "function" &&
-      document.getElementById("graphOverlay").classList.contains("open")) {
+      currentView === "graph") {
     graphCy.resize();
     graphCy.fit();
   }
@@ -416,4 +516,7 @@ document.getElementById("showDecisions").onchange = () => { renderNav(buildGraph
 document.getElementById("showSources").onchange = () => { renderNav(buildGraph(current || { nodes: {} })); };
 document.getElementById("search").oninput = debounce(() => { renderNav(buildGraph(current || { nodes: {} })); }, 300);
 
+loadPanelSizes();
+setupResizer("resizerLeft", "treePanel", "sourcePanel", "tree");
+setupResizer("resizerRight", "sourcePanel", "filePanel", "source");
 loadList();
