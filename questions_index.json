@@ -1,6 +1,6 @@
 {
-  "max_id": 15,
-  "revision": 15,
+  "max_id": 16,
+  "revision": 16,
   "briefs": [
     {
       "num": 1,
@@ -106,6 +106,13 @@
       "question": "为什么 rules 在上下文里，你却明知故犯违反元描述规则？",
       "answer_summary": "规则是建议式注入、无生成时硬校验；高压下满足用户的目标压过风格约束，且 self 误造了未提出的自证任务。",
       "file": "questions/015.md"
+    },
+    {
+      "num": 16,
+      "question_ref": "Q16",
+      "question": "P1-P5 与 s1/n1/n10 这些节点 ID 到底是什么关系？P1 下的 s1/s2/s3 是不是步骤 1.1/1.2/1.3？为什么不同 phase 下节点 ID 命名不一样？",
+      "answer_summary": "P1-P5 是顺序执行的 5 个平级阶段（siblings，非嵌套）；P1 内 s1/s2/s3 是 parallel 的平级节点，不是层级子步骤；s1/n1/n10 等 ID 是各 phase 作者独立命名的本地标签，无全局层级含义，结构由 children/yes_branch/no_branch 决定。",
+      "file": "questions/016.md"
     }
   ]
 }
