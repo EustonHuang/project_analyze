@@ -1,7 +1,7 @@
 {
   "implemented_version": 16,
-  "latest_version": 15,
-  "revision": 33,
+  "latest_version": 16,
+  "revision": 34,
   "versions": [
     {
       "version": 1,
@@ -77,6 +77,11 @@
       "version": 15,
       "title": "trace 到底：把关键 helper 函数也展开为节点",
       "file": "architecture/015.md"
+    },
+    {
+      "version": 16,
+      "title": "每个自定义函数都是节点 + 展开/折叠",
+      "file": "architecture/016.md"
     }
   ]
 }

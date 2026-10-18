@@ -76,3 +76,4 @@
 - [070 · correction · 2026-10-18T17:24:14](history/070.json) — 将 latest_version 从 14 修正为 15，revision 31→32，补录 versions[15]，并重新生成 architecture_TOC.md。
 - [071 · plan_modified · 2026-10-18T21:57:59](history/071.json) — 新增 architecture/016：嵌套 children 模型 + 展开/折叠 + 每个自定义函数都节点。
 - [072 · implementation · 2026-10-18T21:57:59](history/072.json) — 落地 016：skill 加嵌套+折叠规则；viewer 支持展开/折叠；trace 完整展开 turn_gate 自定义函数。
+- [073 · correction · 2026-10-18T21:59:33](history/073.json) — 将 latest_version 从 15 修正为 16，revision 33→34，补录 versions[16]，并重新生成 architecture_TOC.md。
