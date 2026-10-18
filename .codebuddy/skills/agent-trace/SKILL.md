@@ -41,6 +41,18 @@ trace 只有两层：`meta` + `nodes[]`。每个节点：
 5. 跑 `scripts/validate.py` 校验（nodes 模型）。
 6. 告诉用户文件路径，并提示用 `agent-trace-view` skill 查看。
 
+## trace 到底：命令不是黑盒
+追踪一个顶层命令或动作时，**如果它内部调用了对流程状态有实质影响的 helper，必须继续把这些 helper 也作为 `process` 节点展开**，并指向 helper 函数的真实行号。例如 `turn_gate begin` 不是单个节点，而要展开为：
+
+- `cmd_begin` 入口；
+- `session_id()` —— 确定会话标识；
+- `baseline_max_id()` —— 读取当前 max_id；
+- `save_state(state)` —— 原子写入 `.codebuddy/hooks/.turn/<session>.json`。
+
+同理，`turn_gate record` 要展开 `load_state()`、路径提取、`in_plan()`/`norm_rel()`/`is_ignored()`、保存/同步；`turn_gate end` 要展开 `load_state()`、`_new_event_targets()`。
+
+不要停在入口函数；用户对照源码时，trace 必须能「钻」到最底层的关键状态变化点。
+
 ## trace 一个项目本体（实例化本项目 workflow）
 把本仓库作为方法论项目，用其真实文件 + 行号实例化通用工作流：
 

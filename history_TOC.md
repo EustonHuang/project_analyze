@@ -71,3 +71,5 @@
 - [065 · plan_modified · 2026-10-18T17:14:56](history/065.json) — architecture/014：根因修复——改 agent-trace skill 输出契约（nodes+next 极简模型）+ 修查看器高亮 CSS + 按新格式产出详细 trace。
 - [066 · implementation · 2026-10-18T17:14:56](history/066.json) — 落地 014：改 agent-trace skill（SKILL.md/template/validate.py）为 nodes 模型；修查看器高亮 CSS；重写 trace 为 22 节点含 turn_gate 全细节。
 - [067 · correction · 2026-10-18T17:15:45](history/067.json) — 将 latest_version 从 13 修正为 14，revision 29→30，补录 versions[14]，并重新生成 architecture_TOC.md。
+- [068 · plan_modified · 2026-10-18T17:23:28](history/068.json) — 新增 architecture/015：'trace 到底' 原则，把关键 helper 函数也展开为节点。
+- [069 · implementation · 2026-10-18T17:23:28](history/069.json) — 落地 015：skill 增加 trace 到底原则；trace 25 节点，turn_gate 关键 helper 全部展开。
