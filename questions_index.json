@@ -1,6 +1,6 @@
 {
-  "max_id": 18,
-  "revision": 18,
+  "max_id": 19,
+  "revision": 19,
   "briefs": [
     {
       "num": 1,
@@ -127,6 +127,13 @@
       "question": "本次会话（agent-trace-view 流程图重构）AI 一五一十犯了哪些错误？请翻全部 history 逐条列出。",
       "answer_summary": "翻完全部 history/001-057 后的错误清单：1)把children当层级致010折叠错误,011才改回顺序;2)流程图位置010放错中间又被改回左侧;3)全屏覆盖层/0x0空白/window.cy污染三次技术翻车;4)sibling vs parent理解迟到;5)节点id混乱且甩锅推责;6)越界写architecture/012未授权+过度提问+把批评当授权;7)set-implemented不更新latest_version连出4次correction(047早有先例)只补不修根因;8)泛泛道歉不精准认错。最大问题:用户早在history/009(Q9)与010(Q10)就立过'停止打地鼠/自主第一性原理设计'规矩,我照犯不误。",
       "file": "questions/018.md"
+    },
+    {
+      "num": 19,
+      "question_ref": "Q19",
+      "question": "流程图（agent-trace-view 中的 Flow Graph）到底是什么？",
+      "answer_summary": "流程图是用 Cytoscape.js 把 trace 控制流画成的有向图（非层级树）。数据来自 phases[]/nodes[]，buildGraph 把 children(下一步)/yes_no(决策)/loop 转成边。结构：顶层5个顺序阶段 P1-P5(siblings,靠阶段末节点children串链)；阶段内仍是siblings——P1 并行(s1/s2/s3)、P2-P5 顺序(children连接)。截至architecture/011默认完整渲染全部节点边、不再折叠(因sibling非父子)；入口在左侧面板『流程图』标签(与步骤树切换)；交互含缩放/平移/点节点联动来源+文件。已知缺口：P1-P5尚未渲染为图内节点(只作左侧树分组)；节点id命名混乱无规范。",
+      "file": "questions/019.md"
     }
   ]
 }
