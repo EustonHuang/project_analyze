@@ -277,13 +277,11 @@ function renderFile() {
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (window.cy) { window.cy.destroy(); window.cy = null; }
-  const showSources = document.getElementById("showSources").checked;
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
-    const s = n.source || {};
-    const sub = s.path ? " [" + s.path + "]" : "";
-    const label = (n.label || n.kind || "step") + (showSources && sub ? "\n" + sub : "");
-    elements.push({ data: { id, label }, classes: n.kind || "step" });
+    // Graph labels must be short and contain no path/newline noise.
+    const label = n.label || n.kind || "step";
+    elements.push({ data: { id, label }, classes: "key-" + (n.kind || "step") });
   });
   g.edges.forEach((e) => {
     if (e.loop) elements.push({ data: { id: e.source + ">self", source: e.source, target: e.source }, classes: "loop" });
@@ -294,6 +292,18 @@ function renderGraph(g) {
       Object.keys(g.nodes).length + " 节点 / " + g.edges.length + " 边。</p></div>";
     return;
   }
+  if (!elements.length) {
+    container.innerHTML = '<div class="graph-fallback"><p>当前 trace 没有可渲染节点。</p></div>';
+    return;
+  }
+  const kindStyles = Object.keys(SHAPE_BY_KIND).map((k) => ({
+    selector: ".key-" + k,
+    style: {
+      shape: SHAPE_BY_KIND[k],
+      "background-color": COLOR_BY_KIND[k],
+      "border-color": COLOR_BY_KIND[k],
+    },
+  }));
   window.cy = cytoscape({
     container,
     elements,
@@ -303,8 +313,7 @@ function renderGraph(g) {
         "background-color": "#4a90d9", color: "#fff", "font-size": 10,
         "text-valign": "center", "text-halign": "center", width: 120, height: 50,
         "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
-      ...Object.entries(SHAPE_BY_KIND).map(([k, s]) => ({ selector: ".key-" + k, style: { shape: s } })),
-      ...Object.entries(COLOR_BY_KIND).map(([k, c]) => ({ selector: ".key-" + k, style: { "background-color": c, "border-color": c } })),
+      ...kindStyles,
       { selector: "edge", style: {
         width: 2, "line-color": "#999", "target-arrow-color": "#999", "target-arrow-shape": "triangle",
         "curve-style": "bezier", "font-size": 9, label: "data(label)",
@@ -314,20 +323,22 @@ function renderGraph(g) {
     ],
     layout: { name: "breadthfirst", directed: true, padding: 20, fit: true },
   });
-  Object.entries(g.nodes).forEach(([id, n]) => {
-    const el = window.cy.getElementById(id);
-    if (el) el.addClass("key-" + (n.kind || "step"));
-  });
   window.cy.on("tap", "node", (e) => {
     const n = g.nodes[e.target.id()];
     if (n) select(n, true);
   });
+  window.cy.resize();
+  window.cy.fit();
 }
 
 function openGraph() {
   if (!current) return;
-  document.getElementById("graphOverlay").classList.add("open");
-  renderGraph(buildGraph(current));
+  const overlay = document.getElementById("graphOverlay");
+  overlay.classList.add("open");
+  // Defer render until the flex overlay has non-zero dimensions.
+  requestAnimationFrame(() => {
+    renderGraph(buildGraph(current));
+  });
 }
 function closeGraph() {
   document.getElementById("graphOverlay").classList.remove("open");
@@ -371,6 +382,12 @@ document.getElementById("toggleGraph").onclick = () => {
 };
 document.getElementById("closeGraph").onclick = closeGraph;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGraph(); });
+window.addEventListener("resize", () => {
+  if (window.cy && document.getElementById("graphOverlay").classList.contains("open")) {
+    window.cy.resize();
+    window.cy.fit();
+  }
+});
 document.getElementById("mdRaw").onclick = () => { fileMode = "raw"; setMdButtons("raw"); renderFile(); };
 document.getElementById("mdRendered").onclick = () => { fileMode = "rendered"; setMdButtons("rendered"); renderFile(); };
 document.getElementById("traceSelect").onchange = loadTrace;

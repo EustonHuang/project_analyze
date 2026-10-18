@@ -1,6 +1,6 @@
 {
-  "max_id": 47,
-  "revision": 47,
+  "max_id": 48,
+  "revision": 48,
   "briefs": [
     {
       "event_id": 1,
@@ -518,6 +518,17 @@
       "corrects_event_id": 46,
       "standard_version": "v0.8",
       "file": "history/047.json"
+    },
+    {
+      "event_id": 48,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T14:13:26.026584+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/008；修复流程图延迟渲染、简化节点标签、合并 kind 样式、增加 resize 处理；重写 project_analyze_flow.json，使所有 file 来源指向实际代码/配置行（如 turn_gate.py cmd_end、settings.json hook 命令、server.py main、append_history.py cmd_append_history 等），不再高亮 docstring 或 frontmatter 描述。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/048.json"
     }
   ]
 }
