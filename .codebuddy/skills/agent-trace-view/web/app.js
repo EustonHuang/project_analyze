@@ -7,7 +7,6 @@ let fileMode = "raw";      // raw | rendered
 let viewerConfig = null;   // { project_root, default_trace } from /api/config
 let graphCy = null;        // Cytoscape instance (kept private to avoid window.cy clashes)
 let currentView = "tree";  // "tree" | "graph"
-let graphExpanded = new Set(); // Set of node ids currently expanded in the graph
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -317,28 +316,6 @@ function showGraphView() {
 }
 
 // ---- graph panel ---------------------------------------------------------
-function getDescendants(parentId, graph) {
-  const result = new Set();
-  const stack = [parentId];
-  while (stack.length) {
-    const pid = stack.pop();
-    graph.edges.forEach((e) => {
-      if (e.source === pid && e.target !== pid && !result.has(e.target)) {
-        result.add(e.target);
-        stack.push(e.target);
-      }
-    });
-  }
-  return result;
-}
-
-function isNodeVisible(id, graph) {
-  if (graph.roots.includes(id)) return true;
-  const parent = graph.parents[id];
-  if (!parent) return false;
-  return graphExpanded.has(parent) && isNodeVisible(parent, graph);
-}
-
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (graphCy && typeof graphCy.destroy === "function") {
@@ -346,9 +323,6 @@ function renderGraph(g) {
   }
   graphCy = null;
   if (!g) return;
-
-  // Reset expansion on new trace: only roots visible.
-  graphExpanded = new Set(g.roots);
 
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
@@ -393,12 +367,11 @@ function renderGraph(g) {
       boxSelectionEnabled: false,
       style: [
         { selector: "node", style: {
-          label: "data(label)", "text-wrap": "wrap", "text-max-width": 160,
+          label: "data(label)", "text-wrap": "wrap", "text-max-width": 150,
           "background-color": "#4a90d9", color: "#fff", "font-size": 12,
-          "text-valign": "center", "text-halign": "center", width: 160, height: 60,
-          "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle", "border-style": "solid" } },
+          "text-valign": "center", "text-halign": "center", width: 150, height: 55,
+          "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
         ...kindStyles,
-        { selector: "node.collapsed", style: { "border-style": "dashed", "border-width": 3, "border-color": "#1f2937" } },
         { selector: "node.selected", style: { "border-color": "#facc15", "border-width": 4 } },
         { selector: "edge", style: {
           width: 2, "line-color": "#64748b", "target-arrow-color": "#64748b", "target-arrow-shape": "triangle",
@@ -409,67 +382,26 @@ function renderGraph(g) {
       ],
     });
 
-    function updateVisibility() {
-      // Mark collapsed/expanded classes and hide elements.
-      graphCy.batch(() => {
-        graphCy.nodes().forEach((n) => {
-          const hasChildren = g.edges.some((e) => e.source === n.id() && e.target !== n.id());
-          n.removeClass("collapsed");
-          n.removeClass("leaf");
-          if (hasChildren) {
-            if (graphExpanded.has(n.id())) n.addClass("expanded");
-            else n.addClass("collapsed");
-          } else {
-            n.addClass("leaf");
-          }
-          n.style("display", isNodeVisible(n.id(), g) ? "element" : "none");
-        });
-        graphCy.edges().forEach((e) => {
-          const vis = isNodeVisible(e.source().id(), g) && isNodeVisible(e.target().id(), g);
-          e.style("display", vis ? "element" : "none");
-        });
-      });
-    }
-
     graphCy.on("tap", "node", (e) => {
       const n = g.nodes[e.target.id()];
       if (!n) return;
-      const hasChildren = g.edges.some((edge) => edge.source === n.id && edge.target !== n.id);
-      if (hasChildren) {
-        if (graphExpanded.has(n.id)) {
-          // collapse: remove this node and all descendants from expanded set
-          const desc = getDescendants(n.id, g);
-          graphExpanded.delete(n.id);
-          desc.forEach((d) => graphExpanded.delete(d));
-        } else {
-          graphExpanded.add(n.id);
-        }
-        updateVisibility();
-        runLayout();
-      }
       select(n, true);
       graphCy.elements().removeClass("selected");
       graphCy.getElementById(n.id).addClass("selected");
     });
 
-    function runLayout() {
-      const visibleNodes = graphCy.nodes().filter((n) => isNodeVisible(n.id(), g));
-      if (!visibleNodes.length) return;
-      const layout = graphCy.layout({
-        name: "breadthfirst",
-        directed: true,
-        roots: g.roots.filter((r) => isNodeVisible(r, g)),
-        padding: 20,
-        fit: true,
-        animate: false,
-      });
-      layout.on("layoutstop", () => { if (graphCy && typeof graphCy.fit === "function") graphCy.fit(visibleNodes, 20); });
-      layout.run();
-    }
-
-    updateVisibility();
     graphCy.resize();
-    runLayout();
+    const layout = graphCy.layout({
+      name: "breadthfirst",
+      directed: true,
+      padding: 20,
+      fit: true,
+      animate: false,
+    });
+    layout.on("layoutstop", () => {
+      if (graphCy && typeof graphCy.fit === "function") graphCy.fit(graphCy.elements(), 20);
+    });
+    layout.run();
   }
 
   setTimeout(doRender, 100);

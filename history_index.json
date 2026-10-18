@@ -1,6 +1,6 @@
 {
-  "max_id": 55,
-  "revision": 55,
+  "max_id": 56,
+  "revision": 56,
   "briefs": [
     {
       "event_id": 1,
@@ -606,6 +606,17 @@
       "corrects_event_id": 54,
       "standard_version": "v0.8",
       "file": "history/055.json"
+    },
+    {
+      "event_id": 56,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T15:36:14.404405+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/011；移除流程图中对 children 的折叠逻辑；流程图默认渲染全部节点与边，完整展示顺序/并行/决策关系；点击节点仅用于选中并联动来源详情，不再折叠。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/056.json"
     }
   ]
 }
