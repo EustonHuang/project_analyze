@@ -129,8 +129,8 @@ main { flex: 1; display: flex; min-height: 0; }
 .md-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
 #fileBody { flex: 1; overflow: auto; }
 .file-hint { color: #52606d; padding: 20px; text-align: center; }
-.file-raw { padding: 6px 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.55; }
-.file-line { display: flex; }
+.file-raw { display: inline-block; min-width: 100%; padding: 6px 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.55; }
+.file-line { display: flex; width: 100%; }
 .file-line:hover { background: #f1f5f9; }
 .file-no {
   flex-shrink: 0; width: 52px; text-align: right; padding-right: 10px;

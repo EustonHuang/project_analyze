@@ -1,80 +1,83 @@
 #!/usr/bin/env python3
-"""Validate a trace JSON against the agent-trace data models.
+"""Validate a trace JSON against the minimal agent-trace data model.
 
-Two models are supported (backward compatible):
-
-1. Legacy prompt_trace model: top-level `flow` + `triggers`.
-2. agent_system_workflow model (architecture/003): top-level `phases`
-   + `conditions`. Every node MUST carry `source` (type + path); a
-   `decision` node MUST declare `yes_branch` and `no_branch`.
+Model (architecture/012-014): top-level `nodes` array. Each node has
+`id`, `kind` (start|process|decision|end), `content`, `next`, `source`.
+- `next`: string (single successor) | array of {to,label} (branch/parallel
+  /loop) | null (end node).
+- `source`: file {path,line_start,line_end,quote} or system_prompt
+  {section,quote}; `inferred` is forbidden.
+No `phases` / `flow` / `conditions` / `yes_branch` / `no_branch` / `children`.
 """
 import sys
 import json
 
-LEGACY_KINDS = {"entry", "trigger", "step", "parallel", "loop",
-                "branch", "async", "spawn", "io"}
-WORKFLOW_KINDS = {"entry", "decision", "step", "parallel", "loop", "io", "exit"}
-TRIG_TYPES = {"rule", "memory", "hook", "skill", "tool"}
+KINDS = {"start", "process", "decision", "end"}
 
 
-def validate_node(node, path, model, ids=None):
+def validate_node(node, path, ids):
     ok = True
     if not isinstance(node, dict):
         print(f"ERROR: {path} 不是对象")
         return False
-    for f in ("id", "kind", "label"):
+    for f in ("id", "kind", "content"):
         if f not in node:
             print(f"ERROR: {path} 缺少字段 {f}")
             ok = False
-    if model == "workflow":
-        if node.get("kind") not in WORKFLOW_KINDS:
-            print(f"ERROR: {path} kind={node.get('kind')} 非法（workflow 模型）")
+    if node.get("kind") not in KINDS:
+        print(f"ERROR: {path} kind={node.get('kind')} 非法（仅允许 {sorted(KINDS)}）")
+        ok = False
+
+    # source
+    src = node.get("source")
+    if not isinstance(src, dict) or not src.get("type"):
+        print(f"ERROR: {path} 缺少 source.type——强制")
+        ok = False
+    elif src.get("type") == "file":
+        if not src.get("path"):
+            print(f"ERROR: {path} source.type=file 缺少 path")
             ok = False
-        src = node.get("source")
-        if not isinstance(src, dict) or not src.get("type"):
-            print(f"ERROR: {path} 缺少 source.type——workflow 模型强制")
+        if not isinstance(src.get("line_start"), int) or not isinstance(src.get("line_end"), int):
+            print(f"ERROR: {path} source.type=file 缺少 line_start/line_end（整数）")
             ok = False
-        elif src.get("type") == "file":
-            if not src.get("path"):
-                print(f"ERROR: {path} source.type=file 缺少 path")
-                ok = False
-            if not isinstance(src.get("line_start"), int) or not isinstance(src.get("line_end"), int):
-                print(f"ERROR: {path} source.type=file 缺少 line_start/line_end（整数）")
-                ok = False
-        elif src.get("type") == "system_prompt":
-            if not src.get("section"):
-                print(f"ERROR: {path} source.type=system_prompt 缺少 section")
-                ok = False
-        else:
-            print(f"ERROR: {path} source.type={src.get('type')} 非法（仅允许 file / system_prompt，禁止 inferred）")
+        if not src.get("quote"):
+            print(f"ERROR: {path} source.type=file 缺少 quote")
             ok = False
-        if node.get("kind") == "decision":
-            for b in ("yes_branch", "no_branch"):
-                v = node.get(b)
-                if not v:
-                    print(f"ERROR: {path} decision 缺少分支 {b}")
-                    ok = False
-                elif ids is not None and v not in ids:
-                    print(f"ERROR: {path} decision {b}={v} 指向不存在的节点")
-                    ok = False
-        for i, c in enumerate(node.get("children", [])):
-            if isinstance(c, dict):
-                if not validate_node(c, f"{path}.children[{i}]", model, ids):
-                    ok = False
-            elif isinstance(c, str):
-                if ids is not None and c not in ids:
-                    print(f"ERROR: {path}.children[{i}]={c} 指向不存在的节点")
-                    ok = False
-            else:
-                print(f"ERROR: {path}.children[{i}] 既非对象也非 id 引用")
+    elif src.get("type") == "system_prompt":
+        if not src.get("section"):
+            print(f"ERROR: {path} source.type=system_prompt 缺少 section")
+            ok = False
+        if not src.get("quote"):
+            print(f"ERROR: {path} source.type=system_prompt 缺少 quote")
+            ok = False
+    else:
+        print(f"ERROR: {path} source.type={src.get('type')} 非法（仅允许 file / system_prompt，禁止 inferred）")
+        ok = False
+
+    # next
+    nx = node.get("next")
+    if nx is None:
+        if node.get("kind") != "end":
+            print(f"ERROR: {path} next 为 null 但 kind 非 end")
+            ok = False
+    elif isinstance(nx, str):
+        if ids is not None and nx not in ids:
+            print(f"ERROR: {path} next={nx} 指向不存在的节点")
+            ok = False
+    elif isinstance(nx, list):
+        if not nx:
+            print(f"ERROR: {path} next 为空数组")
+            ok = False
+        for i, e in enumerate(nx):
+            if not isinstance(e, dict) or "to" not in e:
+                print(f"ERROR: {path} next[{i}] 缺少 to")
+                ok = False
+            elif ids is not None and e.get("to") not in ids:
+                print(f"ERROR: {path} next[{i}].to={e.get('to')} 指向不存在的节点")
                 ok = False
     else:
-        if node.get("kind") not in LEGACY_KINDS:
-            print(f"ERROR: {path} kind={node.get('kind')} 非法")
-            ok = False
-        for i, c in enumerate(node.get("children", [])):
-            if not validate_node(c, f"{path}.children[{i}]", model, ids):
-                ok = False
+        print(f"ERROR: {path} next 类型非法（需 string/array/null）")
+        ok = False
     return ok
 
 
@@ -89,53 +92,29 @@ def main():
         print("ERROR: 无法读取/解析 JSON:", e)
         sys.exit(1)
 
+    if "nodes" not in t or not isinstance(t["nodes"], list) or not t["nodes"]:
+        print("ERROR: 顶层需 nodes[] 数组且非空（极简模型，不接受 phases/flow）")
+        sys.exit(1)
+
     ok = True
-    if "phases" in t:                       # workflow model
-        model = "workflow"
-        if not isinstance(t["phases"], list) or not t["phases"]:
-            print("ERROR: phases 缺失或非数组")
+    ids = set()
+    for n in t["nodes"]:
+        if isinstance(n, dict) and n.get("id"):
+            ids.add(n["id"])
+    for i, n in enumerate(t["nodes"]):
+        if not validate_node(n, f"nodes[{i}]", ids):
             ok = False
-        ids = set()
-        for i, ph in enumerate(t["phases"]):
-            if not isinstance(ph, dict) or "nodes" not in ph:
-                print(f"ERROR: phases[{i}] 缺 nodes")
-                ok = False
-                continue
-            for n in ph["nodes"]:
-                if isinstance(n, dict) and n.get("id"):
-                    ids.add(n["id"])
-        for i, ph in enumerate(t["phases"]):
-            if not isinstance(ph, dict):
-                continue
-            for j, n in enumerate(ph["nodes"]):
-                if not validate_node(n, f"phases[{i}].nodes[{j}]", model, ids):
-                    ok = False
-        for i, c in enumerate(t.get("conditions", [])):
-            if not isinstance(c, dict) or "question" not in c or "source" not in c:
-                print(f"ERROR: conditions[{i}] 缺 question/source")
-                ok = False
-    elif "flow" in t:                       # legacy model
-        model = "legacy"
-        if not isinstance(t["flow"], list):
-            print("ERROR: flow 非数组")
-            ok = False
-        else:
-            for i, n in enumerate(t["flow"]):
-                if not validate_node(n, f"flow[{i}]", model):
-                    ok = False
-        for i, tr in enumerate(t.get("triggers", [])):
-            if not isinstance(tr, dict) or "type" not in tr or "name" not in tr:
-                print(f"ERROR: triggers[{i}] 缺少 type/name")
-                ok = False
-            elif tr.get("type") not in TRIG_TYPES:
-                print(f"ERROR: triggers[{i}] type={tr.get('type')} 非法")
-                ok = False
-    else:
-        print("ERROR: 无法识别模型（需 phases 或 flow）")
+
+    kinds_present = {n.get("kind") for n in t["nodes"] if isinstance(n, dict)}
+    if "start" not in kinds_present:
+        print("ERROR: 缺少 kind=start 的入口节点")
+        ok = False
+    if "end" not in kinds_present:
+        print("ERROR: 缺少 kind=end 的结束节点")
         ok = False
 
     if ok:
-        print(f"OK: trace 结构合法（{model} 模型）")
+        print(f"OK: trace 结构合法（nodes 模型，{len(t['nodes'])} 节点）")
     sys.exit(0 if ok else 1)
 
 

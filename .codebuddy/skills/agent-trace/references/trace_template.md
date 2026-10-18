@@ -1,92 +1,48 @@
-# Trace 模板
+# Trace 模板（极简模型，唯一契约）
 
-architecture/003 定义了两种 trace 模型，向后兼容。
+trace 只有两层：`meta` + `nodes[]`。**不接受 `phases` / `flow` / `conditions` 等旧模型。**
 
-## 模型 A：`agent_system_workflow`（architecture/003 主线）
+## 节点字段
 
-追踪 Agent 系统级工作流，与具体 prompt 无关。节点按类型映射流程图形状，每个节点必须带来源。
-
-```json
-{
-  "meta": {
-    "kind": "agent_system_workflow",
-    "target": "CodeBuddy agent",
-    "created_at": "2026-10-17"
-  },
-  "phases": [
-    {
-      "id": "P1",
-      "name": "会话启动与上下文加载",
-      "kind": "sequence",
-      "required": true,
-      "source": { "type": "system_prompt", "path": "always_applied_*_rules", "quote": "..." },
-      "nodes": [
-        {
-          "id": "n1",
-          "kind": "entry",
-          "label": "接收用户 query",
-          "detail": "用户本轮输入",
-          "source": { "type": "system_prompt", "path": "user_info", "quote": "..." },
-          "children": ["n2"]
-        },
-        {
-          "id": "n3",
-          "kind": "decision",
-          "label": "是否存在全局 user rules？",
-          "detail": "条件判断",
-          "source": { "type": "user_rule", "path": "always_applied_user_rules", "quote": "..." },
-          "yes_branch": "n4",
-          "no_branch": "n5"
-        }
-      ]
-    }
-  ],
-  "conditions": [
-    {
-      "id": "C1",
-      "question": "是否存在全局 user rules？",
-      "kind": "rule_presence",
-      "source": { "type": "system_prompt", "path": "always_applied_user_rules", "quote": "..." }
-    }
-  ]
-}
-```
-
-### 节点 kind → 流程图形状（全套映射，非仅条件）
-
-| kind | 形状 | 说明 |
+| 字段 | 必填 | 说明 |
 |------|------|------|
-| `entry` / `exit` | 圆角矩形（terminator） | 起止 |
-| `step` | 矩形（process） | 顺序处理 |
-| `decision` | 菱形（decision） | 条件；出边标 yes / no |
-| `io` | 平行四边形（I/O） | 读写文件 / 调外部接口 |
-| `parallel` | 虚线框容器 | 内含并行成员 |
-| `loop` | 圆角框容器 + 回边 | 循环体 |
+| `id` | ✓ | 全局唯一字符串 |
+| `kind` | ✓ | `start` / `process` / `decision` / `end` |
+| `content` | ✓ | 步骤内容（首行标题，可多行） |
+| `next` | ✓ | string（单后继）/ array`[{to,label}]`（分支·并行·循环）/ `null`（`end`） |
+| `source` | ✓ | `file{path,line_start,line_end,quote}` 或 `system_prompt{section,quote}` |
 
-### 字段约束
+## 约定
+- **顺序**：`next` 为 string，指向下一个节点 id。
+- **分支**：`next` 为 array，`decision` 节点用 `label: "yes"` / `"no"`。
+- **并行**：`next` 为 array（无 label 或多 label，多个并发后继）。
+- **循环**：`next` 的 `to` 指向已有上游 id。
+- **无** `phases` / `conditions` / `yes_branch` / `no_branch` / `children`。
 
-- `source`（**必填**）：仅允许两类，禁止 `inferred`：
-  - `type: "file"`：`{ path, line_start, line_end, quote }`——仓库内真实文件的具体行号区间。
-  - `type: "system_prompt"`：`{ section, quote }`——系统提示/工具描述的段落名 + 原文（系统提示无行号，用段落名代替）。
-- `decision` 必须声明 `yes_branch` 与 `no_branch`（指向节点 id）。
-- 顺序流用 `children` 串接；条件流用 `yes_branch` / `no_branch`。
-- 节点 id 在单个 trace 内全局唯一即可。
-- 凡无法定位到文件或系统提示原文的推断，移入顶层 `assumptions[]`，不作为事实节点。
-
-## 模型 B：`prompt_trace`（legacy，兼容保留）
-
-旧模型，仍以 `flow[]` + `triggers[]` 表达单次运行。本 skill 不改动其兼容能力。
+## 示例
 
 ```json
 {
-  "entry": "用户的入口 prompt 原文",
-  "depth": 3,
-  "triggers": [
-    { "type": "rule|memory|hook|skill|tool", "name": "触发组件名", "cond": "触发条件", "effect": "导致什么" }
-  ],
-  "flow": [
-    { "id": "n1", "kind": "entry|trigger|step|parallel|loop|branch|async|spawn|io",
-      "label": "步骤简述", "detail": "触发条件 / 来源 / 耗时等", "children": [] }
+  "meta": { "kind": "agent_workflow", "target": "project_analyze", "created_at": "2026-10-18" },
+  "nodes": [
+    {
+      "id": "1", "kind": "start",
+      "content": "接收用户 prompt（UserPromptSubmit → turn_gate begin）",
+      "next": "2",
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 6, "line_end": 10, "quote": "command: ... turn_gate.py begin" }
+    },
+    {
+      "id": "3", "kind": "decision",
+      "content": "是否涉及方案改进 / 新功能 / 架构变更？",
+      "next": [ { "to": "4", "label": "yes" }, { "to": "6", "label": "no" } ],
+      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" }
+    },
+    {
+      "id": "9", "kind": "end",
+      "content": "结束本轮（Stop → turn_gate end 放行）",
+      "next": null,
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 29, "line_end": 33, "quote": "command: ... turn_gate.py end" }
+    }
   ]
 }
 ```

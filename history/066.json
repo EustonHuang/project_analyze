@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "implementation",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "落地 architecture/014 根因修复：重写 agent-trace SKILL.md 与 references/trace_template.md 为 nodes+next 极简模型（删除 phases/conditions/yes_branch/no_branch/children 旧模型）；重写 scripts/validate.py 仅校验 nodes 模型；修改 agent-trace-view/web/styles.css 使 .file-raw 为 inline-block+min-width:100%（.file-line 撑满父宽），让 .file-line.target 黄色高亮覆盖整行长内容（含横向溢出）不再中断；重写 agent_traces/project_analyze_flow.json 为 22 节点通用工作流（含 turn_gate begin/record/end 全细节）。validate.py 校验通过，viewer 正常返回 22 节点、无 phases/conditions。"
+  },
+  "source": {
+    "user_prompt": "两个问题一起根因修复并 implement。",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".codebuddy/skills/agent-trace/SKILL.md",
+      ".codebuddy/skills/agent-trace/references/trace_template.md",
+      ".codebuddy/skills/agent-trace/scripts/validate.py",
+      ".codebuddy/skills/agent-trace-view/web/styles.css",
+      "agent_traces/project_analyze_flow.json"
+    ],
+    "change_summary": "落地 014：改 agent-trace skill（SKILL.md/template/validate.py）为 nodes 模型；修查看器高亮 CSS；重写 trace 为 22 节点含 turn_gate 全细节。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "comments": "validate.py 校验 22 节点通过；viewer 返回 22 节点。",
+  "event_id": 66,
+  "recorded_at": "2026-10-18T17:14:56.402763+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "2aeb75bc2259f8b3f57be11242c8893bcaf1d609627dcdcfd2a7c60cd5cf61d7",
+    "plan_md_line_count": 46,
+    "source_doc": "architecture/014.md"
+  }
+}
