@@ -1,0 +1,37 @@
+{
+  "schema_version": "2.0",
+  "event_type": "implementation",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "实现 architecture/012：重写 project_analyze_flow.json 为 nodes+next 极简模型（21 节点，无 phases）；改写 agent-trace-view 的 app.js（buildGraph 读 nodes+next、renderNav 扁平列表、renderSource/renderGraph 用 content、loadTrace 读 nodes）与 server.py（filter_trace 对 nodes 模型透传）；同步 SKILL.md 模型描述。"
+  },
+  "source": {
+    "user_prompt": "设计好立即 implement。",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "agent_traces/project_analyze_flow.json",
+      ".codebuddy/skills/agent-trace-view/web/app.js",
+      ".codebuddy/skills/agent-trace-view/server/server.py",
+      ".codebuddy/skills/agent-trace-view/SKILL.md"
+    ],
+    "change_summary": "落地 012：trace 改为 nodes 极简模型；viewer 不再依赖 phases，由 next 构建顺序/分支/并行/循环；server 对 nodes 透传。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "comments": "已重启 viewer 服务验证：/api/traces 返回 21 节点、phases=False。",
+  "event_id": 60,
+  "recorded_at": "2026-10-18T16:46:59.872681+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "346afe429d07ca9ac32352d6799e316bad6744d27229974d671038f3e37bf199",
+    "plan_md_line_count": 60,
+    "source_doc": "architecture/012.md"
+  }
+}

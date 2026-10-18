@@ -29,63 +29,38 @@ function params() {
 }
 
 const SHAPE_BY_KIND = {
-  entry: "round-rectangle", exit: "round-rectangle", step: "rectangle",
-  decision: "diamond", io: "rhomboid", parallel: "round-rectangle",
-  loop: "round-rectangle", trigger: "rectangle", branch: "diamond",
-  async: "rectangle", spawn: "rectangle",
+  start: "round-rectangle", end: "round-rectangle",
+  process: "rectangle", decision: "diamond",
 };
 const COLOR_BY_KIND = {
-  entry: "#1d4ed8", exit: "#1d4ed8", step: "#4a90d9", decision: "#d97706",
-  io: "#16a085", parallel: "#e08e0b", loop: "#7b4ea3", trigger: "#4a90d9",
-  branch: "#2aa198", async: "#c0392b", spawn: "#c0392b",
+  start: "#1d4ed8", end: "#1d4ed8",
+  process: "#4a90d9", decision: "#d97706",
 };
 const SHAPE_ICON = {
-  entry: "◉", exit: "◉", step: "▭", decision: "◇", io: "▱",
-  parallel: "▤", loop: "↻", trigger: "▭", branch: "◇", async: "▭", spawn: "▭",
+  start: "◉", end: "◉", process: "▭", decision: "◇",
 };
 
 function buildGraph(data) {
   const nodes = {}, edges = [], roots = [], parents = {};
-  if (data.phases) {
-    data.phases.forEach((ph) => (ph.nodes || []).forEach((n) => (nodes[n.id] = n)));
-    Object.values(nodes).forEach((n) => {
-      if (n.kind === "entry") roots.push(n.id);
-      (n.children || []).forEach((cid) => {
-        if (typeof cid === "string") {
-          edges.push({ source: n.id, target: cid, label: "" });
-          parents[cid] = n.id;
-        }
-      });
-      if (n.kind === "decision") {
-        if (n.yes_branch) {
-          edges.push({ source: n.id, target: n.yes_branch, label: "yes" });
-          parents[n.yes_branch] = n.id;
-        }
-        if (n.no_branch) {
-          edges.push({ source: n.id, target: n.no_branch, label: "no" });
-          parents[n.no_branch] = n.id;
-        }
-      }
+  const list = data.nodes || [];
+  list.forEach((n) => { nodes[n.id] = n; });
+  list.forEach((n) => {
+    const nx = n.next;
+    if (nx == null) return;
+    const push = (tgt, label) => {
+      if (!tgt) return;
+      edges.push({ source: n.id, target: tgt, label: label || "" });
+      parents[tgt] = n.id;
+    };
+    if (typeof nx === "string") push(nx, "");
+    else if (Array.isArray(nx)) nx.forEach((e) => {
+      if (typeof e === "string") push(e, "");
+      else push(e.to, e.label);
     });
-    if (!roots.length && data.phases.length)
-      (data.phases[0].nodes || []).forEach((n) => { if (n.kind === "entry") roots.push(n.id); });
-  } else {
-    (function walk(list, pid) {
-      (list || []).forEach((n, i) => {
-        const id = n.id || (pid ? pid + "." + i : "n" + i);
-        nodes[id] = n;
-        if (pid) {
-          edges.push({ source: pid, target: id, label: "" });
-          parents[id] = pid;
-        } else {
-          roots.push(id);
-        }
-        if (n.kind === "entry" && !pid) roots.push(id);
-        if (n.kind === "loop") edges.push({ source: id, target: id, label: "", loop: true });
-        walk(n.children || [], id);
-      });
-    })(data.flow || [], null);
-  }
+  });
+  const hasIncoming = new Set(edges.map((e) => e.target));
+  list.forEach((n) => { if (!hasIncoming.has(n.id)) roots.push(n.id); });
+  if (!roots.length && list.length) roots.push(list[0].id);
   return { nodes, edges, roots, parents };
 }
 
@@ -96,68 +71,44 @@ function render(g) {
   if (n) select(n, false);
 }
 
-// ---- left: Phase Navigator (flat, grouped, collapsible) -------------------
+// ---- left: flat node list (no phase grouping) ----------------------------
 function renderNav(g) {
   const root = document.getElementById("tree");
   root.innerHTML = "";
   const showDec = document.getElementById("showDecisions").checked;
   const term = document.getElementById("search").value.trim().toLowerCase();
-  const phases = current.phases || [{ id: "_", name: "流程", nodes: Object.values(g.nodes) }];
+  const list = Object.values(g.nodes);
 
-  phases.forEach((ph, pi) => {
-    const visible = (ph.nodes || []).filter((n) => {
-      if (showDec && n.kind !== "decision") return false;
-      if (term && !JSON.stringify(n).toLowerCase().includes(term)) return false;
-      return true;
-    });
-    if (!visible.length) return;
+  list.forEach((n) => {
+    if (showDec && n.kind !== "decision") return;
+    if (term && !JSON.stringify(n).toLowerCase().includes(term)) return;
 
-    const block = document.createElement("div");
-    block.className = "phase-block";
-
-    const head = document.createElement("div");
-    head.className = "phase-head";
-    const badge = document.createElement("span");
-    badge.className = "phase-badge " + (ph.kind || "");
-    badge.textContent = ph.kind || "";
-    head.appendChild(badge);
-    const title = document.createElement("span");
-    title.className = "phase-title";
-    title.textContent = "P" + (pi + 1) + " · " + (ph.name || ph.id || "");
-    head.appendChild(title);
-    head.onclick = () => block.classList.toggle("collapsed");
-    block.appendChild(head);
-
-    const list = document.createElement("div");
-    list.className = "phase-list";
-    visible.forEach((n) => {
-      const row = document.createElement("div");
-      row.className = "node-row kind-" + (n.kind || "step") + (n.id === selectedId ? " selected" : "");
-      const icon = document.createElement("span");
-      icon.className = "node-icon"; icon.textContent = SHAPE_ICON[n.kind] || "▭";
-      row.appendChild(icon);
-      const idEl = document.createElement("span");
-      idEl.className = "node-id"; idEl.textContent = n.id;
-      row.appendChild(idEl);
-      const label = document.createElement("span");
-      label.className = "node-label"; label.textContent = n.label || n.id;
-      row.appendChild(label);
-      if (n.kind === "decision") {
-        const br = document.createElement("span");
-        br.className = "node-branch";
-        br.textContent = " ✓" + (n.yes_branch || "?") + " ✗" + (n.no_branch || "?");
-        row.appendChild(br);
-      }
-      if (n.source && n.source.path && document.getElementById("showSources").checked) {
-        const sp = document.createElement("span");
-        sp.className = "node-src"; sp.textContent = n.source.path;
-        row.appendChild(sp);
-      }
-      row.onclick = () => select(n, true);
-      list.appendChild(row);
-    });
-    block.appendChild(list);
-    root.appendChild(block);
+    const row = document.createElement("div");
+    row.className = "node-row kind-" + (n.kind || "process") + (n.id === selectedId ? " selected" : "");
+    const icon = document.createElement("span");
+    icon.className = "node-icon"; icon.textContent = SHAPE_ICON[n.kind] || "▭";
+    row.appendChild(icon);
+    const idEl = document.createElement("span");
+    idEl.className = "node-id"; idEl.textContent = n.id;
+    row.appendChild(idEl);
+    const label = document.createElement("span");
+    label.className = "node-label"; label.textContent = (n.content || n.id).split("\n")[0];
+    row.appendChild(label);
+    if (n.kind === "decision" && Array.isArray(n.next)) {
+      const yes = n.next.find((e) => (typeof e === "string" ? false : e.label === "yes"));
+      const no = n.next.find((e) => (typeof e === "string" ? false : e.label === "no"));
+      const br = document.createElement("span");
+      br.className = "node-branch";
+      br.textContent = " ✓" + (yes && yes.to ? yes.to : "?") + " ✗" + (no && no.to ? no.to : "?");
+      row.appendChild(br);
+    }
+    if (n.source && n.source.path && document.getElementById("showSources").checked) {
+      const sp = document.createElement("span");
+      sp.className = "node-src"; sp.textContent = n.source.path;
+      row.appendChild(sp);
+    }
+    row.onclick = () => select(n, true);
+    root.appendChild(row);
   });
 }
 
@@ -183,12 +134,13 @@ function renderSource(n) {
   const target = document.getElementById("sourceBody");
   target.innerHTML = "";
   const kind = document.createElement("div");
-  kind.className = "src-kind kind-" + (n.kind || "step");
-  kind.textContent = (SHAPE_ICON[n.kind] || "▭") + " " + (n.kind || "step") + "  [" + n.id + "]";
+  kind.className = "src-kind kind-" + (n.kind || "process");
+  kind.textContent = (SHAPE_ICON[n.kind] || "▭") + " " + (n.kind || "process") + "  [" + n.id + "]";
   target.appendChild(kind);
-  const title = document.createElement("h4"); title.textContent = n.label || n.id;
+  const lines = (n.content || n.id).split("\n");
+  const title = document.createElement("h4"); title.textContent = lines[0];
   target.appendChild(title);
-  if (n.detail) { const d = document.createElement("div"); d.className = "src-detail"; d.textContent = n.detail; target.appendChild(d); }
+  if (lines.length > 1) { const d = document.createElement("div"); d.className = "src-detail"; d.textContent = lines.slice(1).join("\n"); target.appendChild(d); }
 
   const src = n.source;
   if (src) {
@@ -209,9 +161,11 @@ function renderSource(n) {
     if (src.quote) { const q = document.createElement("pre"); q.className = "src-quote"; q.textContent = "“" + src.quote + "”"; box.appendChild(q); }
     target.appendChild(box);
   }
-  if (n.kind === "decision") {
+  if (n.kind === "decision" && Array.isArray(n.next)) {
+    const yes = n.next.find((e) => (typeof e === "string" ? false : e.label === "yes"));
+    const no = n.next.find((e) => (typeof e === "string" ? false : e.label === "no"));
     const br = document.createElement("div"); br.className = "src-branch";
-    br.textContent = "分支：yes → " + (n.yes_branch || "?") + " ／ no → " + (n.no_branch || "?");
+    br.textContent = "分支：yes → " + (yes && yes.to ? yes.to : "?") + " ／ no → " + (no && no.to ? no.to : "?");
     target.appendChild(br);
   }
 }
@@ -326,8 +280,8 @@ function renderGraph(g) {
 
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
-    const label = n.label || n.kind || "step";
-    const cls = ["key-" + (n.kind || "step")];
+    const label = (n.content || n.kind || "process").split("\n")[0];
+    const cls = ["key-" + (n.kind || "process")];
     if (id === selectedId) cls.push("selected");
     elements.push({ data: { id, label }, classes: cls.join(" ") });
   });
@@ -504,9 +458,7 @@ async function loadTrace() {
   const name = document.getElementById("traceSelect").value;
   if (!name) return;
   current = await api("/api/traces/" + encodeURIComponent(name) + "?" + params());
-  const firstEntry = current.phases && current.phases
-    .flatMap((ph) => ph.nodes || [])
-    .find((n) => n.kind === "entry");
+  const firstEntry = (current.nodes || []).find((n) => n.kind === "start") || (current.nodes || [])[0];
   selectedId = (firstEntry || {}).id || null;
   const g = buildGraph(current);
   renderNav(g);

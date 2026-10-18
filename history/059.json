@@ -1,0 +1,34 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "设计 architecture/012：极简 trace 模型与流程图。依据用户批评重做——去掉 phases/conditions/assumptions 冗余顶层、去掉 children/yes_branch/no_branch 三套后继字段，节点只含 kind/content/next(+source)。并行/分支/循环均用 next 表达。"
+  },
+  "source": {
+    "user_prompt": "根据之前对 trace 的全部批评，重新设计新的 architecture，尤其是流程图，不要有多余设计；每个节点只需 kind/content/后继，设计好立即 implement。",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/012.md"
+    ],
+    "change_summary": "新增 architecture/012：定义极简 trace 模型（nodes 数组；Node 仅 kind/content/next(+source)），并规定 viewer 由 nodes+next 构建流程图、不再读 phases。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 59,
+  "recorded_at": "2026-10-18T16:46:59.664888+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "346afe429d07ca9ac32352d6799e316bad6744d27229974d671038f3e37bf199",
+    "plan_md_line_count": 60,
+    "source_doc": "architecture/012.md"
+  }
+}

@@ -14,4 +14,4 @@
 - [v008 · agent-trace-view 流程图修复与 trace 来源精确化](architecture/008.md) — 状态：历史
 - [v009 · agent-trace-view 流程图可用性重构](architecture/009.md) — 状态：历史
 - [v010 · agent-trace-view 流程图改为左侧面板 + 层级按需展开](architecture/010.md) — 状态：历史
-- [v011 · agent-trace-view 流程图应展示完整控制流，而非层级树](architecture/011.md) — 状态：已落地
+- [v011 · agent-trace-view 流程图应展示完整控制流，而非层级树](architecture/011.md) — 状态：待执行（已定义未落地）

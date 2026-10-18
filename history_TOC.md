@@ -62,3 +62,5 @@
 - [056 · plan_modified · 2026-10-18T15:36:14](history/056.json) — 新增 architecture/011；移除流程图中对 children 的折叠逻辑；流程图默认渲染全部节点与边，完整展示顺序/并行/决策关系；点击节点仅用于选中并联动来源详情，不再折叠。
 - [057 · correction · 2026-10-18T15:37:12](history/057.json) — 将 latest_version 从 10 修正为 11，补录 versions[11]，并重新生成 architecture_TOC.md。
 - [058 · correction · 2026-10-18T16:14:21](history/058.json) — 重写 questions/019.md 的『答』开头：先澄清概念边界（流程图是国际通用图示概念，AI 无资格定义），再仅描述本项目 Flow Graph 功能本身。
+- [059 · plan_modified · 2026-10-18T16:46:59](history/059.json) — 新增 architecture/012：定义极简 trace 模型（nodes 数组；Node 仅 kind/content/next(+source)），并规定 viewer 由 nodes+next 构建流程图、不再读 phases。
+- [060 · implementation · 2026-10-18T16:46:59](history/060.json) — 落地 012：trace 改为 nodes 极简模型；viewer 不再依赖 phases，由 next 构建顺序/分支/并行/循环；server 对 nodes 透传。

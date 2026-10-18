@@ -3,391 +3,52 @@
     "kind": "project_anatomy",
     "project": "project_analyze",
     "standard_version": "v0.8",
-    "note": "architecture/003 的 Agent 工作流在 project_analyze 上的实例化；source 指向实际代码/配置行，而非描述性文字。",
+    "note": "architecture/003 的 Agent 工作流在 project_analyze 上的实例化。极简模型：每个节点只含 kind / content / next（后继）。并行=多后继，分支=带 label 的多后继，循环=指向已有节点的后继。source 为项目强制的来源可追溯（path+行号+quote）。",
     "created_at": "2026-10-18"
   },
-  "phases": [
-    {
-      "id": "P1",
-      "name": "项目能力：可用 skills（parallel，互不相依）",
-      "kind": "parallel",
-      "required": false,
-      "source": {
-        "type": "file",
-        "path": ".codebuddy/skills/agent-trace/SKILL.md",
-        "line_start": 34,
-        "line_end": 40,
-        "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
-      },
-      "nodes": [
-        {
-          "id": "s1",
-          "kind": "step",
-          "label": "agent-trace（采集侧）",
-          "detail": "产出结构化 trace JSON，落盘 agent_traces/；不启动服务、不渲染",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 34,
-            "line_end": 40,
-            "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
-          },
-          "children": []
-        },
-        {
-          "id": "s2",
-          "kind": "step",
-          "label": "agent-trace-view（渲染侧）",
-          "detail": "启动前后端 viewer，渲染 agent_traces/ 下的 trace JSON",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
-            "line_start": 9,
-            "line_end": 14,
-            "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765"
-          },
-          "children": []
-        },
-        {
-          "id": "s3",
-          "kind": "step",
-          "label": "register-custom-feature（管理侧）",
-          "detail": "在 custom_categories.json 注册项目自定义记录类别，并创建受管子目录",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/register-custom-feature/SKILL.md",
-            "line_start": 19,
-            "line_end": 25,
-            "quote": "python3 .plan-standard/scripts/append_history.py custom register --plan . --name topic_plan"
-          },
-          "children": []
-        }
-      ]
-    },
-    {
-      "id": "P2",
-      "name": "会话启动与守门（sequence）",
-      "kind": "sequence",
-      "required": true,
-      "source": {
-        "type": "file",
-        "path": ".codebuddy/settings.json",
-        "line_start": 3,
-        "line_end": 13,
-        "quote": "UserPromptSubmit -> turn_gate.py begin"
-      },
-      "nodes": [
-        {
-          "id": "n1",
-          "kind": "entry",
-          "label": "接收用户 query（UserPromptSubmit → turn_gate begin）",
-          "detail": "会话开始，hook 记录本轮基线",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/settings.json",
-            "line_start": 6,
-            "line_end": 10,
-            "quote": "command: PLAN_HISTORY_ROOT=\"$CODEBUDDY_PROJECT_DIR\" python3 \"$CODEBUDDY_PROJECT_DIR/.plan-standard/scripts/turn_gate.py\" begin"
-          },
-          "children": ["n2"]
-        },
-        {
-          "id": "n2",
-          "kind": "step",
-          "label": "注入 workspace rule（RULE.mdc 自动注入）",
-          "detail": "新会话开始自动注入 ai-project-standard 规则",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/rules/ai-project-standard/RULE.mdc",
-            "line_start": 11,
-            "line_end": 16,
-            "quote": "受管文件（任何改动必须留痕）"
-          },
-          "children": ["n3"]
-        },
-        {
-          "id": "n3",
-          "kind": "decision",
-          "label": "本轮是否改动受管文件？",
-          "detail": "判断当前 turn 是否触碰受管文件",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/rules/ai-project-standard/RULE.mdc",
-            "line_start": 11,
-            "line_end": 16,
-            "quote": "受管文件（任何改动必须留痕）"
-          },
-          "yes_branch": "n4",
-          "no_branch": "n5"
-        },
-        {
-          "id": "n4",
-          "kind": "step",
-          "label": "进入 history 强制门（Stop → turn_gate end）",
-          "detail": "若改了受管文件却没写 history，会话结束被阻断",
-          "source": {
-            "type": "file",
-            "path": ".plan-standard/scripts/turn_gate.py",
-            "line_start": 395,
-            "line_end": 419,
-            "quote": "uncovered = sorted(declared_set - targets); if uncovered: sys.exit(2)"
-          },
-          "children": ["n5"]
-        },
-        {
-          "id": "n5",
-          "kind": "step",
-          "label": "解析用户意图：trace 本项目",
-          "detail": "识别到用户要 trace 本项目的请求",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 42,
-            "line_end": 50,
-            "quote": "trace 一个项目本体（实例化 architecture/003）"
-          },
-          "children": ["n10"]
-        }
-      ]
-    },
-    {
-      "id": "P3",
-      "name": "采集侧：agent-trace 生成 trace（sequence）",
-      "kind": "sequence",
-      "required": true,
-      "source": {
-        "type": "file",
-        "path": ".codebuddy/skills/agent-trace/SKILL.md",
-        "line_start": 34,
-        "line_end": 40,
-        "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
-      },
-      "nodes": [
-        {
-          "id": "n10",
-          "kind": "step",
-          "label": "确定模型并列出 phases/nodes",
-          "detail": "按 workflow 模型组织 trace 结构",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 34,
-            "line_end": 40,
-            "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
-          },
-          "children": ["n11"]
-        },
-        {
-          "id": "n11",
-          "kind": "decision",
-          "label": "用户是否显式调用 skill？",
-          "detail": "是否点名某 skill",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 9,
-            "line_end": 11,
-            "quote": "用户说\"trace 一下 X\"\"记录这次运行\""
-          },
-          "yes_branch": "n12",
-          "no_branch": "n15"
-        },
-        {
-          "id": "n12",
-          "kind": "step",
-          "label": "扫描可用 skill 列表（.codebuddy/skills/）",
-          "detail": "枚举本项目导出的 skills",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 46,
-            "line_end": 47,
-            "quote": "skills → <project>/.codebuddy/skills/<name>/SKILL.md"
-          },
-          "children": ["n13"]
-        },
-        {
-          "id": "n13",
-          "kind": "step",
-          "label": "调用 use_skill 加载 agent-trace 指令",
-          "detail": "注入采集侧 SKILL.md 的步骤",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 34,
-            "line_end": 40,
-            "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py"
-          },
-          "children": ["n14"]
-        },
-        {
-          "id": "n14",
-          "kind": "step",
-          "label": "实例化 003 工作流：扫 rules/hooks/工具",
-          "detail": "把 003 的 categories 映射到本项目具体文件",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 42,
-            "line_end": 50,
-            "quote": "trace 一个项目本体（实例化 architecture/003）"
-          },
-          "children": ["n20"]
-        },
-        {
-          "id": "n15",
-          "kind": "step",
-          "label": "隐式匹配 skill 意图",
-          "detail": "未显式调用时，按语义匹配",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace/SKILL.md",
-            "line_start": 9,
-            "line_end": 11,
-            "quote": "用户想理解某个 agent / skill / 会话的执行过程"
-          },
-          "children": ["n16"]
-        },
-        {
-          "id": "n16",
-          "kind": "decision",
-          "label": "是否有 skill 匹配意图？",
-          "detail": "是否需要渲染/查看",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
-            "line_start": 9,
-            "line_end": 14,
-            "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765"
-          },
-          "yes_branch": "n12",
-          "no_branch": "n14"
-        }
-      ]
-    },
-    {
-      "id": "P4",
-      "name": "渲染侧：agent-trace-view 展示（sequence）",
-      "kind": "sequence",
-      "required": true,
-      "source": {
-        "type": "file",
-        "path": ".codebuddy/skills/agent-trace-view/SKILL.md",
-        "line_start": 9,
-        "line_end": 14,
-        "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765"
-      },
-      "nodes": [
-        {
-          "id": "n20",
-          "kind": "step",
-          "label": "启动 viewer 服务（server.py 后台守护）",
-          "detail": "读取 agent_traces/ 下 JSON，提供 /api/traces",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace-view/server/server.py",
-            "line_start": 207,
-            "line_end": 241,
-            "quote": "def main(): httpd = HTTPServer(...); httpd.serve_forever()"
-          },
-          "children": ["n21"]
-        },
-        {
-          "id": "n21",
-          "kind": "step",
-          "label": "前端渲染三栏 + Source Inspector",
-          "detail": "选中节点展示来源（file 类型含 path+行号，可点击在 IDE 打开）",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/skills/agent-trace-view/web/app.js",
-            "line_start": 145,
-            "line_end": 191,
-            "quote": "function select(n, scrollNav) { renderSource(n); showFile(n); }"
-          },
-          "children": ["n25"]
-        }
-      ]
-    },
-    {
-      "id": "P5",
-      "name": "受管记录与收尾（sequence）",
-      "kind": "sequence",
-      "required": true,
-      "source": {
-        "type": "file",
-        "path": ".codebuddy/settings.json",
-        "line_start": 26,
-        "line_end": 36,
-        "quote": "Stop -> turn_gate.py end"
-      },
-      "nodes": [
-        {
-          "id": "n25",
-          "kind": "decision",
-          "label": "本轮是否改了受管文件？",
-          "detail": "是否需要留痕",
-          "source": {
-            "type": "file",
-            "path": ".plan-standard/scripts/turn_gate.py",
-            "line_start": 395,
-            "line_end": 419,
-            "quote": "uncovered = sorted(declared_set - targets); if uncovered: sys.exit(2)"
-          },
-          "yes_branch": "n26",
-          "no_branch": "n29"
-        },
-        {
-          "id": "n26",
-          "kind": "step",
-          "label": "写入 history 事件（append_history.py append）",
-          "detail": "双录：提问进 questions/，改进进 improvements/，设计进 architecture/",
-          "source": {
-            "type": "file",
-            "path": ".plan-standard/scripts/append_history.py",
-            "line_start": 622,
-            "line_end": 689,
-            "quote": "def cmd_append_history(...): write_json(target, event); write_json(idx_file, cur_idx)"
-          },
-          "children": ["n27"]
-        },
-        {
-          "id": "n27",
-          "kind": "step",
-          "label": "重建索引与 TOC（自动）",
-          "detail": "append/set-implemented 自动刷新 *_index.json 与 *_TOC.md",
-          "source": {
-            "type": "file",
-            "path": ".plan-standard/scripts/append_history.py",
-            "line_start": 349,
-            "line_end": 388,
-            "quote": "def _regen_toc(plan, kind, max_entries=...): 生成 architecture_TOC.md / history_TOC.md"
-          },
-          "children": ["n29"]
-        },
-        {
-          "id": "n29",
-          "kind": "exit",
-          "label": "结束本轮（Stop → turn_gate end 放行）",
-          "detail": "守门通过，会话结束",
-          "source": {
-            "type": "file",
-            "path": ".codebuddy/settings.json",
-            "line_start": 29,
-            "line_end": 33,
-            "quote": "command: PLAN_HISTORY_ROOT=\"$CODEBUDDY_PROJECT_DIR\" python3 \"$CODEBUDDY_PROJECT_DIR/.plan-standard/scripts/turn_gate.py\" end"
-          },
-          "children": []
-        }
-      ]
-    }
-  ],
-  "conditions": [
-    { "id": "C1", "question": "本轮是否改动受管文件？", "kind": "rule_presence", "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "C2", "question": "用户是否显式调用 skill？", "kind": "skill_invocation", "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 9, "line_end": 11, "quote": "用户说\"trace 一下 X\"" } },
-    { "id": "C3", "question": "是否有 skill 匹配意图？", "kind": "skill_match", "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/SKILL.md", "line_start": 9, "line_end": 14, "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765" } },
-    { "id": "C4", "question": "是否需继续调用工具/留痕？", "kind": "loop_control", "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 419, "quote": "uncovered = sorted(declared_set - targets); if uncovered: sys.exit(2)" } }
-  ],
-  "assumptions": [
-    { "id": "A1", "statement": "project_analyze 当前无 project-level memories 文件；memories 机制由框架注入，未在本 trace 单列节点。", "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } }
+  "nodes": [
+    { "id": "collect", "kind": "process", "content": "agent-trace（采集侧 skill 可用）\n产出结构化 trace JSON，落盘 agent_traces/；不启动服务、不渲染", "next": "1",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 34, "line_end": 40, "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py" } },
+    { "id": "render", "kind": "process", "content": "agent-trace-view（渲染侧 skill 可用）\n启动前后端 viewer，渲染 agent_traces/ 下的 trace JSON", "next": "1",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/SKILL.md", "line_start": 9, "line_end": 14, "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765" } },
+    { "id": "manage", "kind": "process", "content": "register-custom-feature（管理侧 skill 可用）\n在 custom_categories.json 注册项目自定义记录类别，并创建受管子目录", "next": "1",
+      "source": { "type": "file", "path": ".codebuddy/skills/register-custom-feature/SKILL.md", "line_start": 19, "line_end": 25, "quote": "python3 .plan-standard/scripts/append_history.py custom register --plan . --name topic_plan" } },
+
+    { "id": "1", "kind": "start", "content": "接收用户 query（UserPromptSubmit → turn_gate begin）\n会话开始，hook 记录本轮基线", "next": "2",
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 6, "line_end": 10, "quote": "command: PLAN_HISTORY_ROOT=\"$CODEBUDDY_PROJECT_DIR\" python3 \"$CODEBUDDY_PROJECT_DIR/.plan-standard/scripts/turn_gate.py\" begin" } },
+    { "id": "2", "kind": "process", "content": "注入 workspace rule（RULE.mdc 自动注入）\n新会话开始自动注入 ai-project-standard 规则", "next": "3",
+      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
+    { "id": "3", "kind": "decision", "content": "本轮是否改动受管文件？\n判断当前 turn 是否触碰受管文件", "next": [ { "to": "4", "label": "yes" }, { "to": "5", "label": "no" } ],
+      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
+    { "id": "4", "kind": "process", "content": "进入 history 强制门（Stop → turn_gate end）\n若改了受管文件却没写 history，会话结束被阻断", "next": "5",
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 419, "quote": "uncovered = sorted(declared_set - targets); if uncovered: sys.exit(2)" } },
+    { "id": "5", "kind": "process", "content": "解析用户意图：trace 本项目\n识别到用户要 trace 本项目的请求", "next": "6",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 42, "line_end": 50, "quote": "trace 一个项目本体（实例化 architecture/003）" } },
+    { "id": "6", "kind": "process", "content": "确定模型并列出节点", "next": "7",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 34, "line_end": 40, "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py" } },
+    { "id": "7", "kind": "decision", "content": "用户是否显式调用 skill？\n是否点名某 skill", "next": [ { "to": "8", "label": "yes" }, { "to": "11", "label": "no" } ],
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 9, "line_end": 11, "quote": "用户说\"trace 一下 X\"\"记录这次运行\"" } },
+    { "id": "8", "kind": "process", "content": "扫描可用 skill 列表（.codebuddy/skills/）\n枚举本项目导出的 skills", "next": "9",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 46, "line_end": 47, "quote": "skills → <project>/.codebuddy/skills/<name>/SKILL.md" } },
+    { "id": "9", "kind": "process", "content": "调用 use_skill 加载 agent-trace 指令\n注入采集侧 SKILL.md 的步骤", "next": "10",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 34, "line_end": 40, "quote": "步骤 1-6：确定模型、列阶段、填 source、跑 validate.py" } },
+    { "id": "10", "kind": "process", "content": "实例化 003 工作流：扫 rules/hooks/工具\n把 003 的 categories 映射到本项目具体文件", "next": "13",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 42, "line_end": 50, "quote": "trace 一个项目本体（实例化 architecture/003）" } },
+    { "id": "11", "kind": "process", "content": "隐式匹配 skill 意图\n未显式调用时，按语义匹配", "next": "12",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace/SKILL.md", "line_start": 9, "line_end": 11, "quote": "用户想理解某个 agent / skill / 会话的执行过程" } },
+    { "id": "12", "kind": "decision", "content": "是否有 skill 匹配意图？\n是否需要渲染/查看", "next": [ { "to": "8", "label": "yes" }, { "to": "10", "label": "no" } ],
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/SKILL.md", "line_start": 9, "line_end": 14, "quote": "python3 server/server.py --trace-dir <agent_traces 目录> --port 8765" } },
+    { "id": "13", "kind": "process", "content": "启动 viewer 服务（server.py 后台守护）\n读取 agent_traces/ 下 JSON，提供 /api/traces", "next": "14",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/server/server.py", "line_start": 207, "line_end": 241, "quote": "def main(): httpd = HTTPServer(...); httpd.serve_forever()" } },
+    { "id": "14", "kind": "process", "content": "前端渲染三栏 + Source Inspector\n选中节点展示来源（file 类型含 path+行号，可点击在 IDE 打开）", "next": "15",
+      "source": { "type": "file", "path": ".codebuddy/skills/agent-trace-view/web/app.js", "line_start": 145, "line_end": 191, "quote": "function select(n, scrollNav) { renderSource(n); showFile(n); }" } },
+    { "id": "15", "kind": "decision", "content": "本轮是否改了受管文件？\n是否需要留痕", "next": [ { "to": "16", "label": "yes" }, { "to": "18", "label": "no" } ],
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 419, "quote": "uncovered = sorted(declared_set - targets); if uncovered: sys.exit(2)" } },
+    { "id": "16", "kind": "process", "content": "写入 history 事件（append_history.py append）\n双录：提问进 questions/，改进进 improvements/，设计进 architecture/", "next": "17",
+      "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 622, "line_end": 689, "quote": "def cmd_append_history(...): write_json(target, event); write_json(idx_file, cur_idx)" } },
+    { "id": "17", "kind": "process", "content": "重建索引与 TOC（自动）\nappend/set-implemented 自动刷新 *_index.json 与 *_TOC.md", "next": "18",
+      "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 349, "line_end": 388, "quote": "def _regen_toc(plan, kind, max_entries=...): 生成 architecture_TOC.md / history_TOC.md" } },
+    { "id": "18", "kind": "end", "content": "结束本轮（Stop → turn_gate end 放行）\n守门通过，会话结束", "next": null,
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 29, "line_end": 33, "quote": "command: PLAN_HISTORY_ROOT=\"$CODEBUDDY_PROJECT_DIR\" python3 \"$CODEBUDDY_PROJECT_DIR/.plan-standard/scripts/turn_gate.py\" end" } }
   ]
 }
