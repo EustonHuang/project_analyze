@@ -50,3 +50,4 @@
 - [044 · correction · 2026-10-17T14:16:05](history/044.json) — correction：纠正 042 的 recorded_at 占位值 00:00:00。
 - [045 · plan_modified · 2026-10-17T14:18:24](history/045.json) — 按用户指令移除误加的 improvement（涉及框架引擎，非本项目范畴），回退 improvement 索引/TOC 至空。
 - [046 · plan_modified · 2026-10-18T13:52:31](history/046.json) — 新增 architecture/007；server 增加 --project-root/--default-trace 与 /api/config，修复 /api/file 相对路径解析；前端默认加载 project_analyze_flow.json 并使用动态 projec
+- [047 · correction · 2026-10-18T13:53:45](history/047.json) — 将 latest_version 从 6 修正为 7，并补录 versions[6] 与 versions[7] 条目。

@@ -1,6 +1,6 @@
 {
-  "max_id": 46,
-  "revision": 46,
+  "max_id": 47,
+  "revision": 47,
   "briefs": [
     {
       "event_id": 1,
@@ -507,6 +507,17 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/046.json"
+    },
+    {
+      "event_id": 47,
+      "event_type": "correction",
+      "recorded_at": "2026-10-18T13:53:45.817166+08:00",
+      "actor_type": "ai",
+      "change_summary": "将 latest_version 从 6 修正为 7，并补录 versions[6] 与 versions[7] 条目。",
+      "is_correction": true,
+      "corrects_event_id": 46,
+      "standard_version": "v0.8",
+      "file": "history/047.json"
     }
   ]
 }
