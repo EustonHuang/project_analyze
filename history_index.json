@@ -1,6 +1,6 @@
 {
-  "max_id": 61,
-  "revision": 61,
+  "max_id": 63,
+  "revision": 63,
   "briefs": [
     {
       "event_id": 1,
@@ -672,6 +672,28 @@
       "corrects_event_id": 60,
       "standard_version": "v0.8",
       "file": "history/061.json"
+    },
+    {
+      "event_id": 62,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T16:58:14.805459+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/013：通用 agent 会话工作流 trace，修正 012 的两处错误（gate 位置 + 去具体 prompt/skill 绑定）。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/062.json"
+    },
+    {
+      "event_id": 63,
+      "event_type": "implementation",
+      "recorded_at": "2026-10-18T16:58:14.936238+08:00",
+      "actor_type": "ai",
+      "change_summary": "落地 013：trace 改为 15 节点通用工作流，gate 仅在末尾，无具体 prompt/skill 绑定。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/063.json"
     }
   ]
 }

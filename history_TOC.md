@@ -65,3 +65,5 @@
 - [059 · plan_modified · 2026-10-18T16:46:59](history/059.json) — 新增 architecture/012：定义极简 trace 模型（nodes 数组；Node 仅 kind/content/next(+source)），并规定 viewer 由 nodes+next 构建流程图、不再读 phases。
 - [060 · implementation · 2026-10-18T16:46:59](history/060.json) — 落地 012：trace 改为 nodes 极简模型；viewer 不再依赖 phases，由 next 构建顺序/分支/并行/循环；server 对 nodes 透传。
 - [061 · correction · 2026-10-18T16:48:08](history/061.json) — 将 latest_version 从 11 修正为 12，revision 25→26，补录 versions[12]，并重新生成 architecture_TOC.md。
+- [062 · plan_modified · 2026-10-18T16:58:14](history/062.json) — 新增 architecture/013：通用 agent 会话工作流 trace，修正 012 的两处错误（gate 位置 + 去具体 prompt/skill 绑定）。
+- [063 · implementation · 2026-10-18T16:58:14](history/063.json) — 落地 013：trace 改为 15 节点通用工作流，gate 仅在末尾，无具体 prompt/skill 绑定。
