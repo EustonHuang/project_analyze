@@ -1,7 +1,7 @@
 {
   "implemented_version": 15,
-  "latest_version": 14,
-  "revision": 31,
+  "latest_version": 15,
+  "revision": 32,
   "versions": [
     {
       "version": 1,
@@ -72,6 +72,11 @@
       "version": 14,
       "title": "从根因修正 trace 格式：改 agent-trace skill + 修查看器高亮",
       "file": "architecture/014.md"
+    },
+    {
+      "version": 15,
+      "title": "trace 到底：把关键 helper 函数也展开为节点",
+      "file": "architecture/015.md"
     }
   ]
 }

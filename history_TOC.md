@@ -73,3 +73,4 @@
 - [067 · correction · 2026-10-18T17:15:45](history/067.json) — 将 latest_version 从 13 修正为 14，revision 29→30，补录 versions[14]，并重新生成 architecture_TOC.md。
 - [068 · plan_modified · 2026-10-18T17:23:28](history/068.json) — 新增 architecture/015：'trace 到底' 原则，把关键 helper 函数也展开为节点。
 - [069 · implementation · 2026-10-18T17:23:28](history/069.json) — 落地 015：skill 增加 trace 到底原则；trace 25 节点，turn_gate 关键 helper 全部展开。
+- [070 · correction · 2026-10-18T17:24:14](history/070.json) — 将 latest_version 从 14 修正为 15，revision 31→32，补录 versions[15]，并重新生成 architecture_TOC.md。

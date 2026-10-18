@@ -1,6 +1,6 @@
 {
-  "max_id": 69,
-  "revision": 69,
+  "max_id": 70,
+  "revision": 70,
   "briefs": [
     {
       "event_id": 1,
@@ -760,6 +760,17 @@
       "corrects_event_id": null,
       "standard_version": "v0.8",
       "file": "history/069.json"
+    },
+    {
+      "event_id": 70,
+      "event_type": "correction",
+      "recorded_at": "2026-10-18T17:24:14.958400+08:00",
+      "actor_type": "ai",
+      "change_summary": "将 latest_version 从 14 修正为 15，revision 31→32，补录 versions[15]，并重新生成 architecture_TOC.md。",
+      "is_correction": true,
+      "corrects_event_id": 69,
+      "standard_version": "v0.8",
+      "file": "history/070.json"
     }
   ]
 }
