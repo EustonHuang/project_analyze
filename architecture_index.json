@@ -1,7 +1,7 @@
 {
   "implemented_version": 10,
-  "latest_version": 9,
-  "revision": 21,
+  "latest_version": 10,
+  "revision": 22,
   "versions": [
     {
       "version": 1,
@@ -47,6 +47,11 @@
       "version": 9,
       "title": "agent-trace-view 流程图可用性重构",
       "file": "architecture/009.md"
+    },
+    {
+      "version": 10,
+      "title": "agent-trace-view 流程图改为左侧面板 + 层级按需展开",
+      "file": "architecture/010.md"
     }
   ]
 }
