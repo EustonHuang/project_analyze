@@ -61,3 +61,4 @@
 - [055 · correction · 2026-10-18T15:26:32](history/055.json) — 将 latest_version 从 9 修正为 10，补录 versions[10]，并重新生成 architecture_TOC.md。
 - [056 · plan_modified · 2026-10-18T15:36:14](history/056.json) — 新增 architecture/011；移除流程图中对 children 的折叠逻辑；流程图默认渲染全部节点与边，完整展示顺序/并行/决策关系；点击节点仅用于选中并联动来源详情，不再折叠。
 - [057 · correction · 2026-10-18T15:37:12](history/057.json) — 将 latest_version 从 10 修正为 11，补录 versions[11]，并重新生成 architecture_TOC.md。
+- [058 · correction · 2026-10-18T16:14:21](history/058.json) — 重写 questions/019.md 的『答』开头：先澄清概念边界（流程图是国际通用图示概念，AI 无资格定义），再仅描述本项目 Flow Graph 功能本身。

@@ -1,6 +1,6 @@
 {
-  "max_id": 57,
-  "revision": 57,
+  "max_id": 58,
+  "revision": 58,
   "briefs": [
     {
       "event_id": 1,
@@ -628,6 +628,17 @@
       "corrects_event_id": 56,
       "standard_version": "v0.8",
       "file": "history/057.json"
+    },
+    {
+      "event_id": 58,
+      "event_type": "correction",
+      "recorded_at": "2026-10-18T16:14:21.330306+08:00",
+      "actor_type": "ai",
+      "change_summary": "重写 questions/019.md 的『答』开头：先澄清概念边界（流程图是国际通用图示概念，AI 无资格定义），再仅描述本项目 Flow Graph 功能本身。",
+      "is_correction": true,
+      "corrects_event_id": 57,
+      "standard_version": "v0.8",
+      "file": "history/058.json"
     }
   ]
 }

@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "纠正 questions/019.md 中对通用术语『流程图』的越界定义：原措辞把国际通用概念直接等同成 agent-trace-view 里的 Flow Graph 功能，等于用项目实现去框定通用术语。更正为：流程图是通用图示概念，本项目功能只是其具体实现，AI 无资格定义通用术语。"
+  },
+  "source": {
+    "user_prompt": "用户指出：把国际通用的『流程图』定义成这个项目里一个 skill 里的东西是越界、无资格。要求纠正。",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "questions/019.md"
+    ],
+    "change_summary": "重写 questions/019.md 的『答』开头：先澄清概念边界（流程图是国际通用图示概念，AI 无资格定义），再仅描述本项目 Flow Graph 功能本身。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 57,
+    "reason": "上一版将通用术语『流程图』定义为 agent-trace-view 内的具体功能，越界且措辞错误，用户要求更正。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 58,
+  "recorded_at": "2026-10-18T16:14:21.330306+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "6e981ffb9d4ee8b46b9d835b5b9fd5f5171c7021f4a41189b20af2c8aa69470f",
+    "plan_md_line_count": 45,
+    "source_doc": "architecture/011.md"
+  }
+}
