@@ -64,3 +64,4 @@
 - [058 · correction · 2026-10-18T16:14:21](history/058.json) — 重写 questions/019.md 的『答』开头：先澄清概念边界（流程图是国际通用图示概念，AI 无资格定义），再仅描述本项目 Flow Graph 功能本身。
 - [059 · plan_modified · 2026-10-18T16:46:59](history/059.json) — 新增 architecture/012：定义极简 trace 模型（nodes 数组；Node 仅 kind/content/next(+source)），并规定 viewer 由 nodes+next 构建流程图、不再读 phases。
 - [060 · implementation · 2026-10-18T16:46:59](history/060.json) — 落地 012：trace 改为 nodes 极简模型；viewer 不再依赖 phases，由 next 构建顺序/分支/并行/循环；server 对 nodes 透传。
+- [061 · correction · 2026-10-18T16:48:08](history/061.json) — 将 latest_version 从 11 修正为 12，revision 25→26，补录 versions[12]，并重新生成 architecture_TOC.md。

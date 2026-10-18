@@ -1,7 +1,7 @@
 {
   "implemented_version": 12,
-  "latest_version": 11,
-  "revision": 25,
+  "latest_version": 12,
+  "revision": 26,
   "versions": [
     {
       "version": 1,
@@ -57,6 +57,11 @@
       "version": 11,
       "title": "agent-trace-view 流程图应展示完整控制流，而非层级树",
       "file": "architecture/011.md"
+    },
+    {
+      "version": 12,
+      "title": "极简 trace 模型与流程图设计",
+      "file": "architecture/012.md"
     }
   ]
 }
