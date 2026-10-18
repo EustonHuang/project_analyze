@@ -57,3 +57,4 @@
 - [051 · correction · 2026-10-18T14:54:17](history/051.json) — 将 Cytoscape 实例从全局 window.cy 改为模块私有 graphCy；destroy/fit/resize 前均检查是否为函数，避免 window.cy 被污染时直接抛错导致流程图空白。
 - [052 · plan_modified · 2026-10-18T15:08:02](history/052.json) — 新增 architecture/009；中间面板改为「来源详情/流程图」标签页；移除全屏流程图覆盖层；Cytoscape 节点放大到 180×70、字体 13px 并启用滚轮缩放/拖拽画布；增加放大/缩小/适应工具栏；点击图节点自动切回来源详情显示详情；左右与右侧新增可拖动分隔线
 - [053 · correction · 2026-10-18T15:09:10](history/053.json) — 将 latest_version 从 8 修正为 9，补录 versions[9]，并重新生成 architecture_TOC.md。
+- [054 · plan_modified · 2026-10-18T15:25:35](history/054.json) — 新增 architecture/010；左侧面板改为「步骤/流程图」标签切换；移除中间面板的流程图标签；流程图默认只显示顶层节点，点击节点展开/折叠子树；收起节点用虚线边框提示；保留三栏可拖动分隔线。

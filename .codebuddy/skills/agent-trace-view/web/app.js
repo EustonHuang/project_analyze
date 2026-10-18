@@ -6,7 +6,8 @@ let fileCache = null;      // { path, content, start, end, isMd }
 let fileMode = "raw";      // raw | rendered
 let viewerConfig = null;   // { project_root, default_trace } from /api/config
 let graphCy = null;        // Cytoscape instance (kept private to avoid window.cy clashes)
-let currentView = "source"; // "source" | "graph"
+let currentView = "tree";  // "tree" | "graph"
+let graphExpanded = new Set(); // Set of node ids currently expanded in the graph
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -45,15 +46,26 @@ const SHAPE_ICON = {
 };
 
 function buildGraph(data) {
-  const nodes = {}, edges = [], roots = [];
+  const nodes = {}, edges = [], roots = [], parents = {};
   if (data.phases) {
     data.phases.forEach((ph) => (ph.nodes || []).forEach((n) => (nodes[n.id] = n)));
     Object.values(nodes).forEach((n) => {
       if (n.kind === "entry") roots.push(n.id);
-      (n.children || []).forEach((cid) => { if (typeof cid === "string") edges.push({ source: n.id, target: cid, label: "" }); });
+      (n.children || []).forEach((cid) => {
+        if (typeof cid === "string") {
+          edges.push({ source: n.id, target: cid, label: "" });
+          parents[cid] = n.id;
+        }
+      });
       if (n.kind === "decision") {
-        if (n.yes_branch) edges.push({ source: n.id, target: n.yes_branch, label: "yes" });
-        if (n.no_branch) edges.push({ source: n.id, target: n.no_branch, label: "no" });
+        if (n.yes_branch) {
+          edges.push({ source: n.id, target: n.yes_branch, label: "yes" });
+          parents[n.yes_branch] = n.id;
+        }
+        if (n.no_branch) {
+          edges.push({ source: n.id, target: n.no_branch, label: "no" });
+          parents[n.no_branch] = n.id;
+        }
       }
     });
     if (!roots.length && data.phases.length)
@@ -63,14 +75,19 @@ function buildGraph(data) {
       (list || []).forEach((n, i) => {
         const id = n.id || (pid ? pid + "." + i : "n" + i);
         nodes[id] = n;
-        if (pid) edges.push({ source: pid, target: id, label: "" });
-        if (n.kind === "entry") roots.push(id);
+        if (pid) {
+          edges.push({ source: pid, target: id, label: "" });
+          parents[id] = pid;
+        } else {
+          roots.push(id);
+        }
+        if (n.kind === "entry" && !pid) roots.push(id);
         if (n.kind === "loop") edges.push({ source: id, target: id, label: "", loop: true });
         walk(n.children || [], id);
       });
     })(data.flow || [], null);
   }
-  return { nodes, edges, roots };
+  return { nodes, edges, roots, parents };
 }
 
 function render(g) {
@@ -146,7 +163,7 @@ function renderNav(g) {
 }
 
 // ---- selection: source inspector + file viewer ----------------------------
-function select(n, scrollNav) {
+function select(n, syncNav) {
   selectedId = n.id;
   document.querySelectorAll(".node-row.selected").forEach((el) => el.classList.remove("selected"));
   document.querySelectorAll(".node-row").forEach((el) => {
@@ -155,7 +172,12 @@ function select(n, scrollNav) {
   });
   renderSource(n);
   showFile(n);
-  if (scrollNav && currentView === "graph") showSource();
+  // Highlight in graph without switching away from graph view.
+  if (graphCy) {
+    graphCy.elements().removeClass("selected");
+    const el = graphCy.getElementById(n.id);
+    if (el.length) el.addClass("selected");
+  }
 }
 
 function renderSource(n) {
@@ -276,39 +298,64 @@ function renderFile() {
   else body.scrollTop = 0;
 }
 
-// ---- middle: source / graph tab switching ---------------------------------
-function showSource() {
-  currentView = "source";
-  document.getElementById("tabSource").classList.add("active");
+// ---- left panel: tree / graph tab switching ---------------------------------
+function showTreeView() {
+  currentView = "tree";
+  document.getElementById("tabTree").classList.add("active");
   document.getElementById("tabGraph").classList.remove("active");
-  document.getElementById("sourceView").classList.remove("hidden");
+  document.getElementById("treeView").classList.remove("hidden");
   document.getElementById("graphView").classList.add("hidden");
 }
 
-function showGraph() {
+function showGraphView() {
   currentView = "graph";
-  document.getElementById("tabSource").classList.remove("active");
+  document.getElementById("tabTree").classList.remove("active");
   document.getElementById("tabGraph").classList.add("active");
-  document.getElementById("sourceView").classList.add("hidden");
+  document.getElementById("treeView").classList.add("hidden");
   document.getElementById("graphView").classList.remove("hidden");
   renderGraph(buildGraph(current));
 }
 
-function toggleGraph() {
-  if (currentView === "graph") showSource(); else showGraph();
+// ---- graph panel ---------------------------------------------------------
+function getDescendants(parentId, graph) {
+  const result = new Set();
+  const stack = [parentId];
+  while (stack.length) {
+    const pid = stack.pop();
+    graph.edges.forEach((e) => {
+      if (e.source === pid && e.target !== pid && !result.has(e.target)) {
+        result.add(e.target);
+        stack.push(e.target);
+      }
+    });
+  }
+  return result;
 }
 
-// ---- graph panel ---------------------------------------------------------
+function isNodeVisible(id, graph) {
+  if (graph.roots.includes(id)) return true;
+  const parent = graph.parents[id];
+  if (!parent) return false;
+  return graphExpanded.has(parent) && isNodeVisible(parent, graph);
+}
+
 function renderGraph(g) {
   const container = document.getElementById("cy");
   if (graphCy && typeof graphCy.destroy === "function") {
     try { graphCy.destroy(); } catch (_) {}
   }
   graphCy = null;
+  if (!g) return;
+
+  // Reset expansion on new trace: only roots visible.
+  graphExpanded = new Set(g.roots);
+
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
     const label = n.label || n.kind || "step";
-    elements.push({ data: { id, label }, classes: "key-" + (n.kind || "step") });
+    const cls = ["key-" + (n.kind || "step")];
+    if (id === selectedId) cls.push("selected");
+    elements.push({ data: { id, label }, classes: cls.join(" ") });
   });
   g.edges.forEach((e) => {
     if (e.loop) elements.push({ data: { id: e.source + ">self", source: e.source, target: e.source }, classes: "loop" });
@@ -346,40 +393,83 @@ function renderGraph(g) {
       boxSelectionEnabled: false,
       style: [
         { selector: "node", style: {
-          label: "data(label)", "text-wrap": "wrap", "text-max-width": 170,
-          "background-color": "#4a90d9", color: "#fff", "font-size": 13,
-          "text-valign": "center", "text-halign": "center", width: 180, height: 70,
-          "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
+          label: "data(label)", "text-wrap": "wrap", "text-max-width": 160,
+          "background-color": "#4a90d9", color: "#fff", "font-size": 12,
+          "text-valign": "center", "text-halign": "center", width: 160, height: 60,
+          "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle", "border-style": "solid" } },
         ...kindStyles,
+        { selector: "node.collapsed", style: { "border-style": "dashed", "border-width": 3, "border-color": "#1f2937" } },
+        { selector: "node.selected", style: { "border-color": "#facc15", "border-width": 4 } },
         { selector: "edge", style: {
-          width: 3, "line-color": "#64748b", "target-arrow-color": "#64748b", "target-arrow-shape": "triangle",
-          "curve-style": "bezier", "font-size": 12, label: "data(label)",
+          width: 2, "line-color": "#64748b", "target-arrow-color": "#64748b", "target-arrow-shape": "triangle",
+          "curve-style": "bezier", "font-size": 11, label: "data(label)",
           "text-rotation": "autorotate", color: "#b45309" } },
         { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309" } },
         { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
       ],
     });
+
+    function updateVisibility() {
+      // Mark collapsed/expanded classes and hide elements.
+      graphCy.batch(() => {
+        graphCy.nodes().forEach((n) => {
+          const hasChildren = g.edges.some((e) => e.source === n.id() && e.target !== n.id());
+          n.removeClass("collapsed");
+          n.removeClass("leaf");
+          if (hasChildren) {
+            if (graphExpanded.has(n.id())) n.addClass("expanded");
+            else n.addClass("collapsed");
+          } else {
+            n.addClass("leaf");
+          }
+          n.style("display", isNodeVisible(n.id(), g) ? "element" : "none");
+        });
+        graphCy.edges().forEach((e) => {
+          const vis = isNodeVisible(e.source().id(), g) && isNodeVisible(e.target().id(), g);
+          e.style("display", vis ? "element" : "none");
+        });
+      });
+    }
+
     graphCy.on("tap", "node", (e) => {
       const n = g.nodes[e.target.id()];
-      if (n) {
-        select(n, true);
-        graphCy.$id(n.id).addClass("selected");
+      if (!n) return;
+      const hasChildren = g.edges.some((edge) => edge.source === n.id && edge.target !== n.id);
+      if (hasChildren) {
+        if (graphExpanded.has(n.id)) {
+          // collapse: remove this node and all descendants from expanded set
+          const desc = getDescendants(n.id, g);
+          graphExpanded.delete(n.id);
+          desc.forEach((d) => graphExpanded.delete(d));
+        } else {
+          graphExpanded.add(n.id);
+        }
+        updateVisibility();
+        runLayout();
       }
+      select(n, true);
+      graphCy.elements().removeClass("selected");
+      graphCy.getElementById(n.id).addClass("selected");
     });
+
+    function runLayout() {
+      const visibleNodes = graphCy.nodes().filter((n) => isNodeVisible(n.id(), g));
+      if (!visibleNodes.length) return;
+      const layout = graphCy.layout({
+        name: "breadthfirst",
+        directed: true,
+        roots: g.roots.filter((r) => isNodeVisible(r, g)),
+        padding: 20,
+        fit: true,
+        animate: false,
+      });
+      layout.on("layoutstop", () => { if (graphCy && typeof graphCy.fit === "function") graphCy.fit(visibleNodes, 20); });
+      layout.run();
+    }
+
+    updateVisibility();
     graphCy.resize();
-    const layout = graphCy.layout({
-      name: "breadthfirst",
-      directed: true,
-      padding: 30,
-      fit: true,
-      animate: false,
-    });
-    layout.on("layoutstop", () => {
-      if (graphCy && typeof graphCy.fit === "function") {
-        graphCy.fit(graphCy.elements(), 30);
-      }
-    });
-    layout.run();
+    runLayout();
   }
 
   setTimeout(doRender, 100);
@@ -393,7 +483,7 @@ function graphZoom(level) {
 
 function graphFit() {
   if (!graphCy || typeof graphCy.fit !== "function") return;
-  graphCy.fit(graphCy.elements(), 30);
+  graphCy.fit(graphCy.elements(), 20);
 }
 
 // ---- resizable panels ----------------------------------------------------
@@ -494,13 +584,11 @@ async function loadTrace() {
 }
 
 // ---- event wiring --------------------------------------------------------
-document.getElementById("toggleTree").onclick = () => document.getElementById("treePanel").classList.toggle("collapsed");
-document.getElementById("tabSource").onclick = showSource;
-document.getElementById("tabGraph").onclick = showGraph;
+document.getElementById("tabTree").onclick = showTreeView;
+document.getElementById("tabGraph").onclick = showGraphView;
 document.getElementById("graphZoomIn").onclick = () => graphZoom(graphCy.zoom() * 1.2);
 document.getElementById("graphZoomOut").onclick = () => graphZoom(graphCy.zoom() / 1.2);
 document.getElementById("graphFit").onclick = graphFit;
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && currentView === "graph") showSource(); });
 window.addEventListener("resize", () => {
   if (graphCy && typeof graphCy.resize === "function" && typeof graphCy.fit === "function" &&
       currentView === "graph") {

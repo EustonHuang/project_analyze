@@ -10,7 +10,6 @@
 </head>
 <body>
   <header>
-    <button id="toggleTree" title="收起/展开左侧导航">☰</button>
     <select id="traceSelect"><option>加载中...</option></select>
     <label><input type="checkbox" id="showDecisions" /> 只看决策</label>
     <label><input type="checkbox" id="showSources" checked /> 显示来源路径</label>
@@ -19,16 +18,12 @@
   </header>
   <main>
     <section id="treePanel">
-      <div id="tree"></div>
-    </section>
-    <div class="resizer" id="resizerLeft"></div>
-    <section id="sourcePanel">
-      <div id="middleTabs">
-        <button id="tabSource" class="tab-btn active">来源详情</button>
+      <div id="leftTabs">
+        <button id="tabTree" class="tab-btn active">步骤</button>
         <button id="tabGraph" class="tab-btn">流程图</button>
       </div>
-      <div id="sourceView">
-        <div id="sourceBody">在左侧选择一个节点，查看它的来源与引用。</div>
+      <div id="treeView">
+        <div id="tree"></div>
       </div>
       <div id="graphView" class="hidden">
         <div id="graphToolbar">
@@ -38,6 +33,11 @@
         </div>
         <div id="cy"></div>
       </div>
+    </section>
+    <div class="resizer" id="resizerLeft"></div>
+    <section id="sourcePanel">
+      <h3>来源详情</h3>
+      <div id="sourceBody">在左侧选择一个节点，查看它的来源与引用。</div>
     </section>
     <div class="resizer" id="resizerRight"></div>
     <section id="filePanel">
