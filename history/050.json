@@ -1,0 +1,39 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "修正 architecture/008 的流程图实现：覆盖层打开后 #cy 容器尺寸为 0 导致 Cytoscape 渲染空白。增加延迟渲染、容器尺寸检查、手动 layout 与 layoutstop fit 回掉。"
+  },
+  "source": {
+    "user_prompt": "流程图为什么还是什么都没有？？？？？？？",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".codebuddy/skills/agent-trace-view/web/app.js",
+      ".codebuddy/skills/agent-trace-view/web/styles.css"
+    ],
+    "change_summary": "修复流程图空白：#cy 增加 min-height/width/position；renderGraph 延迟 100ms 并循环检查容器尺寸；Cytoscape 初始化后手动运行 breadthfirst layout，在 layoutstop 中再 fit 一次。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 48,
+    "reason": "architecture/008 implement 后，流程图覆盖层仍为空白。根因是 overlay 打开瞬间 #cy 无实际尺寸，Cytoscape 初始化到 0×0 容器导致图不可见。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 50,
+  "recorded_at": "2026-10-18T14:46:26.086350+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "37def11624eecbf1f162d0ac2a2860ee56f1fbd4551e2f5bc47c9464d36874f1",
+    "plan_md_line_count": 48,
+    "source_doc": "architecture/008.md"
+  }
+}

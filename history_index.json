@@ -1,6 +1,6 @@
 {
-  "max_id": 49,
-  "revision": 49,
+  "max_id": 50,
+  "revision": 50,
   "briefs": [
     {
       "event_id": 1,
@@ -540,6 +540,17 @@
       "corrects_event_id": 48,
       "standard_version": "v0.8",
       "file": "history/049.json"
+    },
+    {
+      "event_id": 50,
+      "event_type": "correction",
+      "recorded_at": "2026-10-18T14:46:26.086350+08:00",
+      "actor_type": "ai",
+      "change_summary": "修复流程图空白：#cy 增加 min-height/width/position；renderGraph 延迟 100ms 并循环检查容器尺寸；Cytoscape 初始化后手动运行 breadthfirst layout，在 layoutstop 中再 fit 一次。",
+      "is_correction": true,
+      "corrects_event_id": 48,
+      "standard_version": "v0.8",
+      "file": "history/050.json"
     }
   ]
 }

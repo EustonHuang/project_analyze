@@ -122,7 +122,7 @@ main { flex: 1; display: flex; min-height: 0; }
   color: #e4e7eb; cursor: pointer;
 }
 #graphBar button:hover { background: #3e4c59; }
-#cy { flex: 1; background: #f8fafc; }
+#cy { flex: 1; min-height: 0; width: 100%; background: #f8fafc; position: relative; }
 .graph-fallback { padding: 16px; color: #52606d; }
 
 .node-row.kind-decision .node-icon { color: #d97706; }

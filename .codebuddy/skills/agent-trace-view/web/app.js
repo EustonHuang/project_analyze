@@ -279,7 +279,6 @@ function renderGraph(g) {
   if (window.cy) { window.cy.destroy(); window.cy = null; }
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
-    // Graph labels must be short and contain no path/newline noise.
     const label = n.label || n.kind || "step";
     elements.push({ data: { id, label }, classes: "key-" + (n.kind || "step") });
   });
@@ -296,49 +295,65 @@ function renderGraph(g) {
     container.innerHTML = '<div class="graph-fallback"><p>当前 trace 没有可渲染节点。</p></div>';
     return;
   }
-  const kindStyles = Object.keys(SHAPE_BY_KIND).map((k) => ({
-    selector: ".key-" + k,
-    style: {
-      shape: SHAPE_BY_KIND[k],
-      "background-color": COLOR_BY_KIND[k],
-      "border-color": COLOR_BY_KIND[k],
-    },
-  }));
-  window.cy = cytoscape({
-    container,
-    elements,
-    style: [
-      { selector: "node", style: {
-        label: "data(label)", "text-wrap": "wrap", "text-max-width": 130,
-        "background-color": "#4a90d9", color: "#fff", "font-size": 10,
-        "text-valign": "center", "text-halign": "center", width: 120, height: 50,
-        "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
-      ...kindStyles,
-      { selector: "edge", style: {
-        width: 2, "line-color": "#999", "target-arrow-color": "#999", "target-arrow-shape": "triangle",
-        "curve-style": "bezier", "font-size": 9, label: "data(label)",
-        "text-rotation": "autorotate", color: "#b45309" } },
-      { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309" } },
-      { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
-    ],
-    layout: { name: "breadthfirst", directed: true, padding: 20, fit: true },
-  });
-  window.cy.on("tap", "node", (e) => {
-    const n = g.nodes[e.target.id()];
-    if (n) select(n, true);
-  });
-  window.cy.resize();
-  window.cy.fit();
+
+  function doRender() {
+    if (!container.offsetWidth || !container.offsetHeight) {
+      // Container still has zero size; retry shortly.
+      setTimeout(doRender, 50);
+      return;
+    }
+    const kindStyles = Object.keys(SHAPE_BY_KIND).map((k) => ({
+      selector: ".key-" + k,
+      style: {
+        shape: SHAPE_BY_KIND[k],
+        "background-color": COLOR_BY_KIND[k],
+        "border-color": COLOR_BY_KIND[k],
+      },
+    }));
+    window.cy = cytoscape({
+      container,
+      elements,
+      style: [
+        { selector: "node", style: {
+          label: "data(label)", "text-wrap": "wrap", "text-max-width": 130,
+          "background-color": "#4a90d9", color: "#fff", "font-size": 10,
+          "text-valign": "center", "text-halign": "center", width: 120, height: 50,
+          "border-width": 2, "border-color": "#2b3a4a", shape: "rectangle" } },
+        ...kindStyles,
+        { selector: "edge", style: {
+          width: 2, "line-color": "#999", "target-arrow-color": "#999", "target-arrow-shape": "triangle",
+          "curve-style": "bezier", "font-size": 9, label: "data(label)",
+          "text-rotation": "autorotate", color: "#b45309" } },
+        { selector: "edge.branch", style: { "line-color": "#b45309", "target-arrow-color": "#b45309" } },
+        { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
+      ],
+    });
+    window.cy.on("tap", "node", (e) => {
+      const n = g.nodes[e.target.id()];
+      if (n) select(n, true);
+    });
+    window.cy.resize();
+    const layout = window.cy.layout({
+      name: "breadthfirst",
+      directed: true,
+      padding: 20,
+      fit: true,
+      animate: false,
+    });
+    layout.on("layoutstop", () => {
+      if (window.cy) window.cy.fit(window.cy.elements(), 20);
+    });
+    layout.run();
+  }
+
+  // Delay until the overlay's flex layout has produced actual dimensions.
+  setTimeout(doRender, 100);
 }
 
 function openGraph() {
   if (!current) return;
-  const overlay = document.getElementById("graphOverlay");
-  overlay.classList.add("open");
-  // Defer render until the flex overlay has non-zero dimensions.
-  requestAnimationFrame(() => {
-    renderGraph(buildGraph(current));
-  });
+  document.getElementById("graphOverlay").classList.add("open");
+  renderGraph(buildGraph(current));
 }
 function closeGraph() {
   document.getElementById("graphOverlay").classList.remove("open");
