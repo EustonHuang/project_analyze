@@ -1,6 +1,6 @@
 {
-  "max_id": 17,
-  "revision": 17,
+  "max_id": 18,
+  "revision": 18,
   "briefs": [
     {
       "num": 1,
@@ -120,6 +120,13 @@
       "question": "project_analyze_flow.json 的设计思路是什么？有没有潜在问题？潜在的问题是什么？",
       "answer_summary": "设计意图：把 architecture/003 的工作流实例化为 phases(顺序阶段)+nodes(步骤,带 source 溯源)+children(顺序下一步)/yes_no(决策分支)+conditions/assumptions。潜在问题：(1)children 命名暗示层级实为顺序，导致误解；(2)阶段衔接隐式、无连通校验；(3)节点 id 混乱无规范；(4)阶段非一等公民；(5)conditions 与 decision 重复无关联；(6)kind 无 schema 约束；(7)并行 sibling 无节点级标记；(8)环无显式 loop 构造；(9)source 重复；(10)节点 schema 无版本。优先修 children 改名、阶段顺序边+校验、id 规范。",
       "file": "questions/017.md"
+    },
+    {
+      "num": 18,
+      "question_ref": "Q18",
+      "question": "本次会话（agent-trace-view 流程图重构）AI 一五一十犯了哪些错误？请翻全部 history 逐条列出。",
+      "answer_summary": "翻完全部 history/001-057 后的错误清单：1)把children当层级致010折叠错误,011才改回顺序;2)流程图位置010放错中间又被改回左侧;3)全屏覆盖层/0x0空白/window.cy污染三次技术翻车;4)sibling vs parent理解迟到;5)节点id混乱且甩锅推责;6)越界写architecture/012未授权+过度提问+把批评当授权;7)set-implemented不更新latest_version连出4次correction(047早有先例)只补不修根因;8)泛泛道歉不精准认错。最大问题:用户早在history/009(Q9)与010(Q10)就立过'停止打地鼠/自主第一性原理设计'规矩,我照犯不误。",
+      "file": "questions/018.md"
     }
   ]
 }
