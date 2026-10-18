@@ -1,6 +1,6 @@
 {
-  "max_id": 73,
-  "revision": 73,
+  "max_id": 74,
+  "revision": 74,
   "briefs": [
     {
       "event_id": 1,
@@ -804,6 +804,17 @@
       "corrects_event_id": 72,
       "standard_version": "v0.8",
       "file": "history/073.json"
+    },
+    {
+      "event_id": 74,
+      "event_type": "plan_modified",
+      "recorded_at": "2026-10-18T22:36:31.538685+08:00",
+      "actor_type": "ai",
+      "change_summary": "新增 architecture/017（全局变量定义与展开规则、注入类节点定位逻辑、注入步骤完整展开）；agent-trace SKILL.md 规则 A 扩展全局变量、新增规则 C 注入类定位；trace_template.md 补全局变量与注入节点示例；architecture_index.json latest_version 16→17 并重建 architecture_TOC.md；project_analyze_flow.json 重写为 18 顶层组 / 98 节点完整 trace。",
+      "is_correction": false,
+      "corrects_event_id": null,
+      "standard_version": "v0.8",
+      "file": "history/074.json"
     }
   ]
 }

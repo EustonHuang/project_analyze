@@ -3,127 +3,283 @@
     "kind": "agent_workflow",
     "project": "project_analyze",
     "standard_version": "v0.8",
-    "note": "project_analyze 通用 agent 会话工作流，由 agent-trace skill 按极简 nodes 模型（可嵌套 children 折叠）产出。turn_gate.py 执行路径上的每个自定义函数都有节点（含 state_path 等嵌套 helper）；库内部函数（os/json/subprocess）不展开。默认折叠，点节点展开深入。",
+    "note": "project_analyze 通用 agent 会话工作流（architecture/012-017 模型）。turn_gate.py 执行路径上每个自定义函数都有节点；函数引用的全局变量（模块顶层赋值名）同样挖到顶层定义行；rule 注入步骤区分 user-level 与 workspace 两级，注入类步骤整文件定位。默认折叠，点节点展开深入。",
     "created_at": "2026-10-18"
   },
   "nodes": [
-    { "id": "1", "kind": "start", "content": "接收用户 prompt（UserPromptSubmit）", "next": "2",
-      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 6, "line_end": 10, "quote": "command: ... turn_gate.py\" begin" } },
-    { "id": "2", "kind": "process", "content": "turn_gate begin 入口：建立本轮 session state", "next": "3",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 292, "line_end": 301, "quote": "def cmd_begin(args): state = {...}; save_state(state)" },
+    { "id": "1", "kind": "start", "content": "接收用户 prompt（UserPromptSubmit hook 触发）", "next": "2",
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 3, "line_end": 13, "quote": "\"UserPromptSubmit\": [ ... \"command\": \"PLAN_HISTORY_ROOT=... python3 .../turn_gate.py begin\" ..." } },
+    { "id": "2", "kind": "process", "content": "turn_gate begin 入口：建立本轮 session state（cmd_begin）", "next": "3",
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 292, "line_end": 301, "quote": "def cmd_begin(args): state = {...}; save_state(state); print(...)" },
       "nodes": [
         { "id": "2a", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": "2b",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 43, "quote": "def session_id(): return os.environ.get('CODEBUDDY_SESSION_ID') or ... 'local-%d' % os.getpid()" } },
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get('CODEBUDDY_SESSION_ID') or os.environ.get('CODEBUDDY_CONVERSATION_ID') or ('local-%d' % os.getpid()))" } },
         { "id": "2b", "kind": "process", "content": "baseline_max_id()：读取 history_index.json 的 max_id", "next": "2c",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 67, "line_end": 74, "quote": "def baseline_max_id(): ... int(idx.get('max_id', 0))" } },
-        { "id": "2c", "kind": "process", "content": "save_state(state)：原子写入 .codebuddy/hooks/.turn/<session>.json", "next": "2d",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 65, "quote": "def save_state(state): ... os.replace(tmp, state_path())" },
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 67, "line_end": 74, "quote": "def baseline_max_id(): idx = json.load(open(HISTORY_INDEX, ...)); return int(idx.get('max_id', 0))" },
           "nodes": [
-            { "id": "2c1", "kind": "process", "content": "state_path()：拼接 .codebuddy/hooks/.turn/<session>.json 路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 47, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" } }
+            { "id": "2b1", "kind": "process", "content": "全局变量 HISTORY_INDEX（模块顶层定义）：history_index.json 路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 32, "line_end": 32, "quote": "HISTORY_INDEX = os.path.join(PLAN_ROOT, 'history_index.json')" } }
+          ] },
+        { "id": "2c", "kind": "process", "content": "save_state(state)：原子写入 .codebuddy/hooks/.turn/<session>.json", "next": "2d",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 64, "quote": "def save_state(state): os.makedirs(TURN_DIR, exist_ok=True); ... os.replace(tmp, state_path())" },
+          "nodes": [
+            { "id": "2c1", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义）：turn state 目录（save_state 用于 makedirs）", "next": "2c2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+            { "id": "2c2", "kind": "process", "content": "state_path()：拼接 .codebuddy/hooks/.turn/<session>.json 路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 46, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" },
+              "nodes": [
+                { "id": "2c2a", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义，state_path 直接引用）", "next": "2c2b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+                { "id": "2c2b", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get(...) or ... or ('local-%d' % os.getpid()))" } }
+              ] }
           ] },
         { "id": "2d", "kind": "process", "content": "print 本轮 begin 基线信息", "next": null,
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 300, "line_end": 301, "quote": "print('turn_gate begin: baseline_max_id=%s ...')" } }
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 300, "line_end": 301, "quote": "print('turn_gate begin: baseline_max_id=%s (session=%s)' % ...)" } }
       ] },
-    { "id": "3", "kind": "process", "content": "注入 workspace rule（受管文件改动必须留痕 + Plan-First）", "next": "4",
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "4", "kind": "process", "content": "解析用户意图（方案改进 / 新功能 / 架构变更 / 问答 / 记录）", "next": "5",
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "5", "kind": "decision", "content": "是否涉及方案改进 / 新功能 / 架构变更？", "next": [ { "to": "6", "label": "yes" }, { "to": "8", "label": "no" } ],
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "6", "kind": "process", "content": "先写方案文档（architecture / questions / improvements），交评审", "next": "7",
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "7", "kind": "decision", "content": "用户是否批准 implement？", "next": [ { "to": "8", "label": "yes" }, { "to": "17", "label": "no" } ],
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "8", "kind": "process", "content": "执行交付物（必要时调用对应 skill）", "next": "9",
-      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 11, "line_end": 16, "quote": "受管文件（任何改动必须留痕）" } },
-    { "id": "9", "kind": "process", "content": "PostToolUse → turn_gate record 入口：登记本轮被触碰的受管文件", "next": "10",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 304, "line_end": 352, "quote": "def cmd_record(args): ... save_state(state)" },
+    { "id": "3", "kind": "process", "content": "注入 user-level rule：跨项目全局纪律随会话自动注入（共 4 条）", "next": "4",
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules", "quote": "**写文档必须遵循 B+树式点数纪律…** / **写规范文档时禁止「澄清式旁白」…** / **No Meta-Descriptions…** / **Plan-First…**（4 条 GLOBAL 规则注入会话上下文）" },
       "nodes": [
-        { "id": "9a", "kind": "process", "content": "load_state()：读取本轮 session state", "next": "9b",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 49, "line_end": 56, "quote": "def load_state(): ... return json.load(open(p, ...))" },
-          "nodes": [
-            { "id": "9a1", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 47, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" } }
-          ] },
-        { "id": "9b", "kind": "process", "content": "read_stdin_json()：解析 hook stdin 的 payload", "next": "9c",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 92, "line_end": 99, "quote": "def read_stdin_json(): ... return json.loads(data)" } },
-        { "id": "9c", "kind": "process", "content": "extract_filepath(payload)：从 --file / stdin / tool_input 提取路径", "next": "9d",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 102, "line_end": 114, "quote": "def extract_filepath(payload): ... return ti.get('filePath')" } },
-        { "id": "9d", "kind": "process", "content": "in_plan(path)：判断文件是否在 plan 根内", "next": "9e",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 86, "line_end": 89, "quote": "def in_plan(path): return not rp.startswith('..')" } },
-        { "id": "9e", "kind": "process", "content": "norm_rel(path)：归一化为相对 plan 根的路径", "next": "9f",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 77, "line_end": 83, "quote": "def norm_rel(path): ... return rp.replace(os.sep, '/')" } },
-        { "id": "9f", "kind": "process", "content": "is_ignored(rel)：按 .turngateignore 过滤", "next": "9g",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 189, "line_end": 198, "quote": "def is_ignored(rel): ... return not neg" },
-          "nodes": [
-            { "id": "9f1", "kind": "process", "content": "load_turngateignore_lines()：读取 .turngateignore 规则", "next": "9f2",
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 121, "line_end": 136, "quote": "def load_turngateignore_lines(): ... for raw in f.read().splitlines()" } },
-            { "id": "9f2", "kind": "process", "content": "_glob_translate(pat)：gitignore 通配符转正则", "next": "9f3",
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 139, "line_end": 164, "quote": "def _glob_translate(pat): ... res.append('[^/]*')" } },
-            { "id": "9f3", "kind": "process", "content": "_pattern_matches(pat, rel)：匹配相对路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 167, "line_end": 186, "quote": "def _pattern_matches(pat, rel): ... return re.match(regex, rel) is not None" } }
-          ] },
-        { "id": "9g", "kind": "process", "content": "custom_feature_of(rel)：识别是否 custom/<feature>/ 路径", "next": "9h",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 243, "line_end": 248, "quote": "def custom_feature_of(rel): ... return parts[1]" } },
-        { "id": "9h", "kind": "process", "content": "registered_custom_features()：读取 custom_categories.json", "next": "9i",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 251, "line_end": 259, "quote": "def registered_custom_features(): ... return [c.get('name') for c in ...]" } },
-        { "id": "9i", "kind": "process", "content": "sync_custom_feature(feat)：重建该 feature 的 index+TOC", "next": "9j",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 262, "line_end": 277, "quote": "def sync_custom_feature(feat): subprocess.run([... 'custom','sync' ...])" } },
-        { "id": "9j", "kind": "process", "content": "custom_side_files(rel)：声明须同步的 index/TOC 路径", "next": "9k",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 280, "line_end": 287, "quote": "def custom_side_files(rel): return ['custom/<feat>_index.json', 'custom/<feat>_TOC.md']" } },
-        { "id": "9k", "kind": "process", "content": "save_state(state)：登记到 declared 后写回", "next": "9l",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 65, "quote": "def save_state(state): ... os.replace(tmp, state_path())" },
-          "nodes": [
-            { "id": "9k1", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 47, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" } }
-          ] },
-        { "id": "9l", "kind": "process", "content": "_run_structure_lint(fp)：校验 architecture 文档结构（非阻断）", "next": null,
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 355, "line_end": 369, "quote": "def _run_structure_lint(path): subprocess.run([... 'structure_lint.py' ...])" } }
+        { "id": "3a", "kind": "process", "content": "规则①：B+树式点数纪律——每节点直接子点最多 5 个、以 3 个为最佳，超限必须合并同类或向下分支", "next": "3b",
+          "source": { "type": "system_prompt", "section": "always_applied_user_rules", "quote": "**写文档必须遵循 B+树式式点数纪律（GLOBAL — 跨所有项目生效）。** 1. 每个节点（一个 § 章节或一组并列列表）的直接子点最多 5 个、以 3 个为最佳…" } },
+        { "id": "3b", "kind": "process", "content": "规则②：禁止「澄清式旁白」——文档只承载最终权威设计内容；删除带编号章节后必须顺排其后所有编号", "next": "3c",
+          "source": { "type": "system_prompt", "section": "always_applied_user_rules", "quote": "**写规范文档时禁止「澄清式旁白」，且改编号必须顺排。** 文档只承载最终、权威的设计内容…删除带编号的章节后，必须顺排其后所有编号…" } },
+        { "id": "3c", "kind": "process", "content": "规则③：No Meta-Descriptions——交付物不得夹带修订/过程注解、作者立场、纯过程闲聊", "next": "3d",
+          "source": { "type": "system_prompt", "section": "always_applied_user_rules", "quote": "**No Meta-Descriptions（禁止元描述）（GLOBAL）。** 所有交付给人看的文档…必须是最终产物本身，不得夹带元描述…" } },
+        { "id": "3d", "kind": "process", "content": "规则④：Plan-First——先写方案交评审，仅在用户明确批准后实现", "next": null,
+          "source": { "type": "system_prompt", "section": "always_applied_user_rules", "quote": "**Plan-First（方案先行，禁止越界实现）（GLOBAL）。** 1. 先写方案…2. 等批准再实现：仅在用户明确说批准…后，才动手写实现文件。" } }
       ] },
-    { "id": "10", "kind": "decision", "content": "本轮是否改了受管文件？（turn_gate end 前判定，仅此处一次）", "next": [ { "to": "11", "label": "yes" }, { "to": "14", "label": "no" } ],
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 406, "quote": "declared = [...]; if not declared: print('no in-plan files changed'); sys.exit(0)" } },
-    { "id": "11", "kind": "process", "content": "写入 history 事件（append_history.py 双录）", "next": "12",
+    { "id": "4", "kind": "process", "content": "注入 workspace rule：ai-project-standard v0.8（RULE.mdc 全文，alwaysApply）", "next": "5",
+      "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 1, "line_end": 18, "quote": "description: AI Project Standard v0.8… alwaysApply: true … ## 受管文件（任何改动必须留痕）… ## 必读与必做 1/2/3" },
+      "nodes": [
+        { "id": "4a", "kind": "process", "content": "必读①：改动受管文件前，先读 <project>/.plan-standard/README.md「MANDATORY」节与 references/workflow.md", "next": "4b",
+          "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 15, "line_end": 15, "quote": "1. 改动上述任何文件前，先读 `<project>/.plan-standard/README.md` 的「MANDATORY」节与 `references/workflow.md`。" },
+          "nodes": [
+            { "id": "4a1", "kind": "process", "content": "读 .plan-standard/README.md「MANDATORY」节：任何改动必须进 history（受管文件清单 + 事件类型映射 + Stop hook 强制阻断）", "next": "4a2",
+              "source": { "type": "file", "path": ".plan-standard/README.md", "line_start": 72, "line_end": 88, "quote": "## MANDATORY — any change must land in history … any modification to a plan file must be logged in history/ — no exemption… Omissions are force-blocked by the Stop hook (turn_gate.py end, exit 2)." } },
+            { "id": "4a2", "kind": "process", "content": "读 references/workflow.md：事件触发规则、provenance 采集、逐条录入 checklist", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/references/workflow.md", "line_start": 1, "line_end": 205, "quote": "# Workflow: When & How to Record (folder form) — This standard framework enforces a fully traceable, append-only revision history…" } }
+          ] },
+        { "id": "4b", "kind": "process", "content": "必做②：任何改动必须在 history/ 留痕（双录：提问写 questions/ + 追加 qna_recorded；改进进 improvements/）", "next": "4c",
+          "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 16, "line_end": 16, "quote": "2. 任何改动**必须**在 `history/` 留痕（双录：提问写 `questions/` + 追加 `qna_recorded`；改进进 `improvements/`）。" } },
+        { "id": "4c", "kind": "process", "content": "必做③：本规则新会话自动注入；刚安装/升级需新建对话会话生效", "next": null,
+          "source": { "type": "file", "path": ".codebuddy/rules/ai-project-standard/RULE.mdc", "line_start": 17, "line_end": 17, "quote": "3. 本规则在**新会话开始**自动注入；若刚安装/升级，请**新建对话会话**使其生效。" } }
+      ] },
+    { "id": "5", "kind": "process", "content": "解析用户意图（方案改进 / 新功能 / 架构变更 / 问答 / 记录）", "next": "6",
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules · Plan-First", "quote": "用户提出「做一个 X」「实现 Y」「设计 Z」…按请求类型分流" } },
+    { "id": "6", "kind": "decision", "content": "是否涉及方案改进 / 新功能 / 架构变更？", "next": [ { "to": "7", "label": "yes" }, { "to": "9", "label": "no" } ],
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules · Plan-First", "quote": "凡涉及**方案改进 / 新功能 / 架构变更 / 新交付物**，必须遵循两步" } },
+    { "id": "7", "kind": "process", "content": "先写方案文档（architecture / questions / improvements），交用户评审", "next": "8",
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules · Plan-First", "quote": "1. **先写方案**：把设计写成方案文档（如 `architecture/NNN.md`…），交给用户评审。" } },
+    { "id": "8", "kind": "decision", "content": "用户是否明确批准 implement？", "next": [ { "to": "9", "label": "yes" }, { "to": "18", "label": "no" } ],
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules · Plan-First", "quote": "2. **等批准再实现**：仅在用户**明确说批准**（如 implement、批准、可以写、做吧）后，才动手写实现文件。" } },
+    { "id": "9", "kind": "process", "content": "执行交付物（动手写实现文件，必要时调用对应 skill）", "next": "10",
+      "source": { "type": "system_prompt", "section": "always_applied_user_rules · Plan-First", "quote": "仅在用户**明确说批准**…后，才动手写实现文件。" } },
+    { "id": "10", "kind": "process", "content": "PostToolUse → turn_gate record 入口：登记本轮被触碰的受管文件（cmd_record）", "next": "11",
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 304, "line_end": 352, "quote": "def cmd_record(args): state = load_state(); ... state['declared'].append(rel); save_state(state)" },
+      "nodes": [
+        { "id": "10a", "kind": "process", "content": "load_state()：读取本轮 session state", "next": "10b",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 49, "line_end": 56, "quote": "def load_state(): p = state_path(); ... return json.load(open(p, ...))" },
+          "nodes": [
+            { "id": "10a1", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 46, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" },
+              "nodes": [
+                { "id": "10a1a", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义，state_path 直接引用）", "next": "10a1b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+                { "id": "10a1b", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get(...) or ... or ('local-%d' % os.getpid()))" } }
+              ] }
+          ] },
+        { "id": "10b", "kind": "process", "content": "state 为 None 时 fallback 重建本轮 state（hook 先于 begin 触发的兜底）", "next": "10c",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 306, "line_end": 309, "quote": "if state is None: state = {'session_id': session_id(), 'baseline_max_id': baseline_max_id(), 'declared': [], ...}" },
+          "nodes": [
+            { "id": "10b1", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": "10b2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get(...) or ... or ('local-%d' % os.getpid()))" } },
+            { "id": "10b2", "kind": "process", "content": "baseline_max_id()：读取 history_index.json 的 max_id", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 67, "line_end": 74, "quote": "def baseline_max_id(): idx = json.load(open(HISTORY_INDEX, ...)); return int(idx.get('max_id', 0))" },
+              "nodes": [
+                { "id": "10b2a", "kind": "process", "content": "全局变量 HISTORY_INDEX（模块顶层定义）：history_index.json 路径", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 32, "line_end": 32, "quote": "HISTORY_INDEX = os.path.join(PLAN_ROOT, 'history_index.json')" } }
+              ] }
+          ] },
+        { "id": "10c", "kind": "process", "content": "read_stdin_json()：解析 hook stdin 的 payload", "next": "10d",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 92, "line_end": 99, "quote": "def read_stdin_json(): data = sys.stdin.read().strip(); ... return json.loads(data)" } },
+        { "id": "10d", "kind": "process", "content": "extract_filepath(payload)：从 --file / stdin / tool_input 提取路径（env CODEBUDDY_FILE_PATH 兜底）", "next": "10e",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 102, "line_end": 114, "quote": "def extract_filepath(payload): ... ti = payload.get('tool_input') or payload.get('input'); ... return ti[key]" } },
+        { "id": "10e", "kind": "process", "content": "in_plan(path)：判断文件是否在 plan 根内", "next": "10f",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 86, "line_end": 89, "quote": "def in_plan(path): ap = os.path.abspath(path); rp = os.path.relpath(ap, PLAN_ROOT); return not rp.startswith('..')" },
+          "nodes": [
+            { "id": "10e1", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义）：plan 根目录（PLAN_HISTORY_ROOT 或脚本上级）", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+          ] },
+        { "id": "10f", "kind": "process", "content": "norm_rel(path)：归一化为相对 plan 根的路径", "next": "10g",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 77, "line_end": 83, "quote": "def norm_rel(path): rp = os.path.relpath(ap, PLAN_ROOT); ... return rp.replace(os.sep, '/')" },
+          "nodes": [
+            { "id": "10f1", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，norm_rel 直接引用）", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+          ] },
+        { "id": "10g", "kind": "process", "content": "is_ignored(rel)：按 .turngateignore 过滤（gitignore 风格，支持 ! 取反）", "next": "10h",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 189, "line_end": 198, "quote": "def is_ignored(rel): for rule in load_turngateignore_lines(): ... if _pattern_matches(pat, rel): return not neg" },
+          "nodes": [
+            { "id": "10g1", "kind": "process", "content": "load_turngateignore_lines()：读取 .turngateignore 非注释行", "next": "10g2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 121, "line_end": 136, "quote": "def load_turngateignore_lines(): p = os.path.join(PLAN_ROOT, '.turngateignore'); ... out.append(line)" },
+              "nodes": [
+                { "id": "10g1a", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，load_turngateignore_lines 直接引用）", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+              ] },
+            { "id": "10g2", "kind": "process", "content": "_glob_translate(pat)：gitignore 通配符（** / * / ?）转正则", "next": "10g3",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 139, "line_end": 164, "quote": "def _glob_translate(pat): ... if pat[i:i+2] == '**': res.append('.*') ... res.append('[^/]*')" } },
+            { "id": "10g3", "kind": "process", "content": "_pattern_matches(pat, rel)：单条模式匹配相对路径（锚定 / 目录 only / 逐段匹配）", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 167, "line_end": 186, "quote": "def _pattern_matches(pat, rel): rx = _glob_translate(clean); ... return re.match(regex, rel, re.DOTALL) is not None" },
+              "nodes": [
+                { "id": "10g3a", "kind": "process", "content": "_glob_translate(pat)：gitignore 通配符转正则（被 _pattern_matches 调用）", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 139, "line_end": 164, "quote": "def _glob_translate(pat): ... return ''.join(res)" } }
+              ] }
+          ] },
+        { "id": "10h", "kind": "process", "content": "custom_feature_of(rel)：识别是否 custom/<feature>/ 路径", "next": "10i",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 243, "line_end": 248, "quote": "def custom_feature_of(rel): parts = rel.replace(os.sep, '/').split('/'); if ... parts[0] == CUSTOM_ROOT: return parts[1]" },
+          "nodes": [
+            { "id": "10h1", "kind": "process", "content": "全局变量 CUSTOM_ROOT（模块顶层定义）：custom/ 根", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 239, "line_end": 239, "quote": "CUSTOM_ROOT = 'custom'" } }
+          ] },
+        { "id": "10i", "kind": "process", "content": "registered_custom_features()：读取 custom_categories.json 中已注册 feature", "next": "10j",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 251, "line_end": 259, "quote": "def registered_custom_features(): p = os.path.join(PLAN_ROOT, CUSTOM_CATEGORIES); ... return [c.get('name') for c in ...]" },
+          "nodes": [
+            { "id": "10i1", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，registered_custom_features 直接引用）", "next": "10i2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } },
+            { "id": "10i2", "kind": "process", "content": "全局变量 CUSTOM_CATEGORIES（模块顶层定义）：custom_categories.json 文件名", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 240, "line_end": 240, "quote": "CUSTOM_CATEGORIES = 'custom_categories.json'" } }
+          ] },
+        { "id": "10j", "kind": "process", "content": "sync_custom_feature(feat)：调 append_history.py custom sync 重建该 feature 的 index+TOC", "next": "10k",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 262, "line_end": 277, "quote": "def sync_custom_feature(name): script = os.path.join(SCRIPT_DIR, 'append_history.py'); subprocess.run([..., 'custom', 'sync', ...])" },
+          "nodes": [
+            { "id": "10j1", "kind": "process", "content": "全局变量 SCRIPT_DIR（模块顶层定义）：脚本所在目录（定位 append_history.py）", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 26, "line_end": 26, "quote": "SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))" } }
+          ] },
+        { "id": "10k", "kind": "process", "content": "custom_side_files(rel)：声明须同步留痕的 <feature>_index.json / _TOC.md", "next": "10l",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 280, "line_end": 286, "quote": "def custom_side_files(rel): feat = custom_feature_of(rel); ... return ['%s/%s_index.json' % (CUSTOM_ROOT, feat), ...]" },
+          "nodes": [
+            { "id": "10k1", "kind": "process", "content": "custom_feature_of(rel)：识别 custom/<feature>/ 路径", "next": "10k2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 243, "line_end": 248, "quote": "def custom_feature_of(rel): ... if ... parts[0] == CUSTOM_ROOT: return parts[1]" },
+              "nodes": [
+                { "id": "10k1a", "kind": "process", "content": "全局变量 CUSTOM_ROOT（模块顶层定义，custom_feature_of 直接引用）", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 239, "line_end": 239, "quote": "CUSTOM_ROOT = 'custom'" } }
+              ] },
+            { "id": "10k2", "kind": "process", "content": "registered_custom_features()：校验 feature 是否已注册", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 251, "line_end": 259, "quote": "def registered_custom_features(): p = os.path.join(PLAN_ROOT, CUSTOM_CATEGORIES); ..." },
+              "nodes": [
+                { "id": "10k2a", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，registered_custom_features 直接引用）", "next": "10k2b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } },
+                { "id": "10k2b", "kind": "process", "content": "全局变量 CUSTOM_CATEGORIES（模块顶层定义）：custom_categories.json 文件名", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 240, "line_end": 240, "quote": "CUSTOM_CATEGORIES = 'custom_categories.json'" } }
+              ] }
+          ] },
+        { "id": "10l", "kind": "process", "content": "save_state(state)：登记 declared 后原子写回", "next": "10m",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 59, "line_end": 64, "quote": "def save_state(state): os.makedirs(TURN_DIR, exist_ok=True); ... os.replace(tmp, state_path())" },
+          "nodes": [
+            { "id": "10l1", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义，save_state 用于 makedirs）", "next": "10l2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+            { "id": "10l2", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 46, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" },
+              "nodes": [
+                { "id": "10l2a", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义，state_path 直接引用）", "next": "10l2b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+                { "id": "10l2b", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get(...) or ... or ('local-%d' % os.getpid()))" } }
+              ] }
+          ] },
+        { "id": "10m", "kind": "process", "content": "_run_structure_lint(fp)：写 architecture/*.md 时跑结构 lint（非阻断警告）", "next": null,
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 355, "line_end": 369, "quote": "def _run_structure_lint(path): lint = os.path.join(SCRIPT_DIR, 'structure_lint.py'); subprocess.run([sys.executable, lint, PLAN_ROOT, '--file', path], ...)" },
+          "nodes": [
+            { "id": "10m1", "kind": "process", "content": "全局变量 SCRIPT_DIR（模块顶层定义，定位 structure_lint.py）", "next": "10m2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 26, "line_end": 26, "quote": "SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))" } },
+            { "id": "10m2", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，作为 lint 的 --plan 参数）", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+          ] }
+      ] },
+    { "id": "11", "kind": "decision", "content": "本轮是否改了受管文件？（turn_gate end 前判定，仅此处一次）", "next": [ { "to": "12", "label": "yes" }, { "to": "15", "label": "no" } ],
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 402, "line_end": 405, "quote": "declared = [d for d in state.get('declared', []) if in_plan(d) and not is_ignored(d)]; if not declared: print('... gate passed'); sys.exit(0)" } },
+    { "id": "12", "kind": "process", "content": "写入 history 事件（append_history.py 双录）", "next": "13",
       "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 622, "line_end": 689, "quote": "def cmd_append_history(...): write_json(target, event); write_json(idx_file, cur_idx)" },
       "nodes": [
-        { "id": "11a", "kind": "process", "content": "_regen_toc(plan, kind)：生成 architecture_TOC.md / history_TOC.md", "next": null,
+        { "id": "12a", "kind": "process", "content": "_regen_toc(plan, kind)：生成 history_TOC.md", "next": null,
           "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 349, "line_end": 388, "quote": "def _regen_toc(plan, kind, max_entries=...): 生成 TOC" } }
       ] },
-    { "id": "12", "kind": "process", "content": "cmd_gen_toc：重建索引与 TOC", "next": "13",
+    { "id": "13", "kind": "process", "content": "cmd_gen_toc：重建索引与 TOC", "next": "14",
       "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 1014, "line_end": 1060, "quote": "def cmd_gen_toc(args): ... _regen_toc(plan, kind)" },
       "nodes": [
-        { "id": "12a", "kind": "process", "content": "_regen_toc(plan, kind)：生成 TOC", "next": null,
+        { "id": "13a", "kind": "process", "content": "_regen_toc(plan, kind)：生成 TOC", "next": null,
           "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 349, "line_end": 388, "quote": "def _regen_toc(plan, kind, max_entries=...): 生成 TOC" } }
       ] },
-    { "id": "13", "kind": "process", "content": "cmd_set_implemented：翻转 implemented_version + 强制 commit→push→tag", "next": "14",
+    { "id": "14", "kind": "process", "content": "cmd_set_implemented：翻转 implemented_version + 强制 commit→push→tag", "next": "15",
       "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 1167, "line_end": 1192, "quote": "IM-002: commit -> push -> tag -> push --tags（tag 版本=架构版本）" },
       "nodes": [
-        { "id": "13a", "kind": "process", "content": "publish 链：commit → push → tag → push --tags", "next": null,
+        { "id": "14a", "kind": "process", "content": "publish 链：commit → push → tag → push --tags", "next": null,
           "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 1175, "line_end": 1192, "quote": "subprocess.run(['git','commit',...]); ... push --tags" } }
       ] },
-    { "id": "14", "kind": "process", "content": "turn_gate end 入口：执行硬 gate", "next": "15",
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 423, "quote": "def cmd_end(args): ..." },
+    { "id": "15", "kind": "process", "content": "turn_gate end 入口：执行硬 gate（cmd_end）", "next": "16",
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 395, "line_end": 423, "quote": "def cmd_end(args): state = load_state(); ... uncovered = sorted(declared_set - targets); ..." },
       "nodes": [
-        { "id": "14a", "kind": "process", "content": "load_state()：读取本轮 declared 列表", "next": "14b",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 49, "line_end": 56, "quote": "def load_state(): ... return json.load(open(p, ...))" },
+        { "id": "15a", "kind": "process", "content": "load_state()：读取本轮 declared 列表", "next": "15b",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 49, "line_end": 56, "quote": "def load_state(): p = state_path(); ... return json.load(open(p, ...))" },
           "nodes": [
-            { "id": "14a1", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 47, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" } }
+            { "id": "15a1", "kind": "process", "content": "state_path()：拼接本轮 state 文件路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 45, "line_end": 46, "quote": "def state_path(): return os.path.join(TURN_DIR, '%s.json' % session_id())" },
+              "nodes": [
+                { "id": "15a1a", "kind": "process", "content": "全局变量 TURN_DIR（模块顶层定义，state_path 直接引用）", "next": "15a1b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 31, "line_end": 31, "quote": "TURN_DIR = os.path.join(PLAN_ROOT, '.codebuddy', 'hooks', '.turn')" } },
+                { "id": "15a1b", "kind": "process", "content": "session_id()：取 CODEBUDDY_SESSION_ID / CONVERSATION_ID / local pid", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 39, "line_end": 42, "quote": "def session_id(): return (os.environ.get(...) or ... or ('local-%d' % os.getpid()))" } }
+              ] }
           ] },
-        { "id": "14b", "kind": "process", "content": "_new_event_targets(baseline)：扫描 history 收集 event_id>baseline 的 target_files", "next": "14c",
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 372, "line_end": 392, "quote": "def _new_event_targets(baseline): ... targets.add(norm_rel(tf))" },
+        { "id": "15b", "kind": "process", "content": "复核 declared：in_plan + is_ignored 过滤", "next": "15c",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 402, "line_end": 402, "quote": "declared = [d for d in state.get('declared', []) if in_plan(d) and not is_ignored(d)]" },
           "nodes": [
-            { "id": "14b1", "kind": "process", "content": "norm_rel(tf)：归一化目标文件为相对路径", "next": null,
-              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 77, "line_end": 83, "quote": "def norm_rel(path): ... return rp.replace(os.sep, '/')" } }
+            { "id": "15b1", "kind": "process", "content": "in_plan(path)：判断文件是否在 plan 根内", "next": "15b2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 86, "line_end": 89, "quote": "def in_plan(path): rp = os.path.relpath(ap, PLAN_ROOT); return not rp.startswith('..')" },
+              "nodes": [
+                { "id": "15b1a", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，in_plan 直接引用）", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+              ] },
+            { "id": "15b2", "kind": "process", "content": "is_ignored(rel)：按 .turngateignore 过滤", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 189, "line_end": 198, "quote": "def is_ignored(rel): for rule in load_turngateignore_lines(): ... return not neg" },
+              "nodes": [
+                { "id": "15b2a", "kind": "process", "content": "load_turngateignore_lines()：读取 .turngateignore 非注释行", "next": "15b2b",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 121, "line_end": 136, "quote": "def load_turngateignore_lines(): p = os.path.join(PLAN_ROOT, '.turngateignore'); ..." },
+                  "nodes": [
+                    { "id": "15b2a1", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，load_turngateignore_lines 直接引用）", "next": null,
+                      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+                  ] },
+                { "id": "15b2b", "kind": "process", "content": "_glob_translate(pat)：gitignore 通配符转正则", "next": "15b2c",
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 139, "line_end": 164, "quote": "def _glob_translate(pat): ... return ''.join(res)" } },
+                { "id": "15b2c", "kind": "process", "content": "_pattern_matches(pat, rel)：单条模式匹配相对路径", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 167, "line_end": 186, "quote": "def _pattern_matches(pat, rel): rx = _glob_translate(clean); ..." },
+                  "nodes": [
+                    { "id": "15b2c1", "kind": "process", "content": "_glob_translate(pat)：gitignore 通配符转正则（被 _pattern_matches 调用）", "next": null,
+                      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 139, "line_end": 164, "quote": "def _glob_translate(pat): ... return ''.join(res)" } }
+                  ] }
+              ] }
           ] },
-        { "id": "14c", "kind": "process", "content": "计算 uncovered = declared_set - targets", "next": null,
-          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 408, "line_end": 419, "quote": "uncovered = sorted(declared_set - targets)" } }
+        { "id": "15c", "kind": "process", "content": "_new_event_targets(baseline)：扫描 history/ 收集 event_id>baseline 的 target_files", "next": "15d",
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 372, "line_end": 392, "quote": "def _new_event_targets(baseline): for name in sorted(os.listdir(os.path.join(PLAN_ROOT, 'history'))): ... targets.add(norm_rel(tf))" },
+          "nodes": [
+            { "id": "15c1", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，history/ 目录与事件文件均按其定位）", "next": "15c2",
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } },
+            { "id": "15c2", "kind": "process", "content": "norm_rel(tf)：归一化目标文件为相对路径", "next": null,
+              "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 77, "line_end": 83, "quote": "def norm_rel(path): rp = os.path.relpath(ap, PLAN_ROOT); ... return rp.replace(os.sep, '/')" },
+              "nodes": [
+                { "id": "15c2a", "kind": "process", "content": "全局变量 PLAN_ROOT（模块顶层定义，norm_rel 直接引用）", "next": null,
+                  "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 30, "line_end": 30, "quote": "PLAN_ROOT = os.environ.get('PLAN_HISTORY_ROOT') or os.path.dirname(SCRIPT_DIR)" } }
+              ] }
+          ] },
+        { "id": "15d", "kind": "process", "content": "计算 uncovered = declared_set − targets", "next": null,
+          "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 407, "line_end": 410, "quote": "baseline = state.get('baseline_max_id', 0); targets = _new_event_targets(baseline); ... uncovered = sorted(declared_set - targets)" } }
       ] },
-    { "id": "15", "kind": "decision", "content": "turn_gate end 是否通过？", "next": [ { "to": "17", "label": "yes" }, { "to": "16", "label": "no" } ],
-      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 412, "line_end": 419, "quote": "if uncovered: print('FAILED'); sys.exit(2)" } },
-    { "id": "16", "kind": "process", "content": "补录缺失 history 事件 → 重新校验（回环到 end）", "next": "14",
+    { "id": "16", "kind": "decision", "content": "turn_gate end 是否通过？", "next": [ { "to": "18", "label": "yes" }, { "to": "17", "label": "no" } ],
+      "source": { "type": "file", "path": ".plan-standard/scripts/turn_gate.py", "line_start": 412, "line_end": 419, "quote": "if uncovered: print('turn_gate end: FAILED — ...'); ... sys.exit(2)" } },
+    { "id": "17", "kind": "process", "content": "补录缺失 history 事件 → 重新校验（回环到 turn_gate end）", "next": "15",
       "source": { "type": "file", "path": ".plan-standard/scripts/append_history.py", "line_start": 622, "line_end": 689, "quote": "def cmd_append_history(...): write_json(target, event)" } },
-    { "id": "17", "kind": "end", "content": "结束本轮（Stop → turn_gate end 放行）", "next": null,
-      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 29, "line_end": 33, "quote": "command: ... turn_gate.py\" end" } }
+    { "id": "18", "kind": "end", "content": "结束本轮（Stop → turn_gate end 放行）", "next": null,
+      "source": { "type": "file", "path": ".codebuddy/settings.json", "line_start": 26, "line_end": 37, "quote": "\"Stop\": [ ... \"command\": \"PLAN_HISTORY_ROOT=... python3 .../turn_gate.py end\" ... ]" } }
   ]
 }

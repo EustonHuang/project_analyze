@@ -19,4 +19,5 @@
 - [v013 · project_analyze 通用工作流 trace（修正 012 两处错误）](architecture/013.md) — 状态：历史
 - [v014 · 从根因修正 trace 格式：改 agent-trace skill + 修查看器高亮](architecture/014.md) — 状态：历史
 - [v015 · trace 到底：把关键 helper 函数也展开为节点](architecture/015.md) — 状态：历史
-- [v016 · 每个自定义函数都是节点 + 展开/折叠](architecture/016.md) — 状态：已落地
+- [v016 · 每个自定义函数都是节点 + 展开/折叠](architecture/016.md) — 状态：历史
+- [v017 · 全局变量挖到底 + 注入节点整文件定位 + 注入步骤完整展开](architecture/017.md) — 状态：已落地

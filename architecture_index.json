@@ -1,7 +1,7 @@
 {
-  "implemented_version": 16,
-  "latest_version": 16,
-  "revision": 34,
+  "implemented_version": 17,
+  "latest_version": 17,
+  "revision": 35,
   "versions": [
     {
       "version": 1,
@@ -82,6 +82,11 @@
       "version": 16,
       "title": "每个自定义函数都是节点 + 展开/折叠",
       "file": "architecture/016.md"
+    },
+    {
+      "version": 17,
+      "title": "全局变量挖到底 + 注入节点整文件定位 + 注入步骤完整展开",
+      "file": "architecture/017.md"
     }
   ]
 }

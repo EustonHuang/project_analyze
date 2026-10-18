@@ -1,0 +1,43 @@
+{
+  "schema_version": "2.0",
+  "event_type": "plan_modified",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "按用户四点要求实现 architecture/017：① 全局变量（模块顶层赋值名）与函数同样挖到底，在每个引用函数下嵌套定义节点；② 注入类步骤（rule 注入）source 整文件定位（RULE.mdc 1-18）；③ 补 user-level rule 注入节点（4 条全局纪律，system_prompt source）；④ workspace rule「必读与必做」三条展开为子节点，README.md MANDATORY 节（72-88）与 references/workflow.md 有真实 source。同步改 agent-trace skill（SKILL.md 规则 A/C + trace_template.md 示例）并按新契约重写 project_analyze_flow.json（18 顶层组 / 98 节点，validate.py 通过）。"
+  },
+  "source": {
+    "user_prompt": "trace 改进四点：1) 函数引用的全局变量（如 HISTORY_INDEX）也要挖到底，且要有正规的全局变量定义方式（不能只看全大写），所有类似问题都要修；2) 「注入 workspace rule」步骤 source 只有 RULE.mdc 11-16，应整文件定位；3) user-level rule 也会注入，必须成节点；4) 注入 workspace rule 后应有 3a/3b/3c 子步骤（先读 README.md MANDATORY 节与 workflow.md、history/ 双录、新会话注入生效），README.md 内容必须有 source。要求 update architecture、改 skill 并 implement，产出完整可折叠/展开的 trace。",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "05a2ad9ff0024fe182d2355bb0192476",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      "architecture/017.md",
+      "architecture_index.json",
+      "architecture_TOC.md",
+      ".codebuddy/skills/agent-trace/SKILL.md",
+      ".codebuddy/skills/agent-trace/references/trace_template.md",
+      "agent_traces/project_analyze_flow.json"
+    ],
+    "change_summary": "新增 architecture/017（全局变量定义与展开规则、注入类节点定位逻辑、注入步骤完整展开）；agent-trace SKILL.md 规则 A 扩展全局变量、新增规则 C 注入类定位；trace_template.md 补全局变量与注入节点示例；architecture_index.json latest_version 16→17 并重建 architecture_TOC.md；project_analyze_flow.json 重写为 18 顶层组 / 98 节点完整 trace。",
+    "sections_affected": [
+      "architecture/017 全部",
+      "SKILL.md 硬规则 A/C",
+      "trace_template.md 新增两节"
+    ],
+    "diff_reference": null
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。turn_gate 全局量映射：被 begin/record/end 执行路径读取的 6 个全局量（SCRIPT_DIR/PLAN_ROOT/TURN_DIR/HISTORY_INDEX/CUSTOM_ROOT/CUSTOM_CATEGORIES）全部成节点；MANAGED_PREFIXES/MANAGED_FILES 仅被未挂 hook 的 cmd_prewrite 路径使用，不在 trace。",
+  "standard_version": "v0.8",
+  "event_id": 74,
+  "recorded_at": "2026-10-18T22:36:31.538685+08:00",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "313b30517a45b4d4840ba29535084ab973ee1535c13ddf14f8df054d235675b1",
+    "plan_md_line_count": 52,
+    "source_doc": "architecture/017.md"
+  }
+}

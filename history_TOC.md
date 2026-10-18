@@ -77,3 +77,4 @@
 - [071 · plan_modified · 2026-10-18T21:57:59](history/071.json) — 新增 architecture/016：嵌套 children 模型 + 展开/折叠 + 每个自定义函数都节点。
 - [072 · implementation · 2026-10-18T21:57:59](history/072.json) — 落地 016：skill 加嵌套+折叠规则；viewer 支持展开/折叠；trace 完整展开 turn_gate 自定义函数。
 - [073 · correction · 2026-10-18T21:59:33](history/073.json) — 将 latest_version 从 15 修正为 16，revision 33→34，补录 versions[16]，并重新生成 architecture_TOC.md。
+- [074 · plan_modified · 2026-10-18T22:36:31](history/074.json) — 新增 architecture/017（全局变量定义与展开规则、注入类节点定位逻辑、注入步骤完整展开）；agent-trace SKILL.md 规则 A 扩展全局变量、新增规则 C 注入类定位；trace_template.md 补全局变量与注入节点示例；architectur

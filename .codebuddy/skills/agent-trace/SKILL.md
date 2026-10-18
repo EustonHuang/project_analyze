@@ -41,17 +41,25 @@ trace 只有两层：`meta` + `nodes[]`。每个节点：
 5. 跑 `scripts/validate.py` 校验（nodes 模型，递归校验嵌套节点）。
 6. 告诉用户文件路径，并提示用 `agent-trace-view` skill 查看。
 
-## 两条硬规则（不可妥协）
+## 三条硬规则（不可妥协）
 
-### 规则 A：trace 到底 —— 每个自定义函数都是节点
+### 规则 A：trace 到底 —— 每个自定义函数与被读全局变量都是节点
 追踪一个命令时，把它执行路径上**所有自定义函数**都列为节点（含库调用链上你自己的 helper）。判断标准：
 - **你自己写的函数**（如 `save_state`、`state_path`、`load_turngateignore_lines`、`_glob_translate`）→ 必须有节点，并指向真实行号。
 - **库内部函数**（`os.path.join`、`json.load`、`subprocess.run`、`pandas.read_csv` 等第三方包实现）→ 不展开。
+- **全局变量 = 模块顶层赋值的名字**（按赋值位置判定，与命名风格无关；`import` 绑定是库，不展开）。凡被执行路径上的函数**读取**的全局变量，必须在该函数节点下嵌套一个定义节点（source 指向顶层赋值行）；同一全局变量被多个函数引用时，在每个引用者下都出现。
 - 若某自定义函数**从未被本次执行路径触达**，视为死代码：应删掉它以收敛规模，**不要**靠省略 trace 来糊弄。节点数量多是「代码抽象过多」的信号，治本是删函数，不是省节点。
 
 ### 规则 B：可折叠 —— 总体步骤 ↔ 深入细节
 - 节点可嵌套 `nodes[]`（children，递归）。顶层节点是「总体步骤」；带 `nodes[]` 的节点默认在 viewer 中折叠，用户点一下再深入其 helper，再点收起。
 - `next` 在同层内串接；嵌套子节点最后一个 `next` 为 `null` 时，回落到父节点的 `next`（父节点展开后由 children 取代，首 child 承接入边、末 child 出边接到父 `next`）。
+
+### 规则 C：注入类步骤 —— 整文件定位 + 两级 rule 都要展开
+- **「把文件全文注入上下文」的步骤**（rule / 规则文件注入）：source 定位**整个文件**（`line_start=1`、`line_end=末行`），不得只截取其中一个小节。
+- **「读文件某个区间」的步骤**：source 定位被读区间（如「先读 README.md 的 MANDATORY 节」→ 该节真实行号区间 + 原文 quote）。
+- 注入 rule 的步骤必须区分两级并各自成节点：
+  - **user-level rule**（跨项目全局纪律，存放于项目之外）→ source 用 `system_prompt` 类型，每条纪律一个子节点。
+  - **workspace rule**（项目内 `.codebuddy/rules/**`，`alwaysApply` 注入）→ source 为规则文件全文；其「必读与必做」等条目逐条成子节点（单行定位），条目指向的被读文件（如 README.md 某节、references/workflow.md）再各自成节点并给出真实行号与 quote。
 
 ## trace 到底示例
 `turn_gate begin` 不是单个节点，而展开为：入口 → `session_id()` → `baseline_max_id()` → `save_state(state)`（→ `state_path()`）→ 打印基线。同理 `turn_gate record` / `turn_gate end` 也要一路展开到最底层自定义函数。
@@ -59,8 +67,8 @@ trace 只有两层：`meta` + `nodes[]`。每个节点：
 ## trace 一个项目本体（实例化本项目 workflow）
 把本仓库作为方法论项目，用其真实文件 + 行号实例化通用工作流：
 
-- 纪律 / 规则 → `.codebuddy/rules/ai-project-standard/RULE.mdc` + 行号。
-- 钩子 → `.codebuddy/settings.json` 与 `.plan-standard/scripts/turn_gate.py` + 行号（含 `begin` / `record` / `end` 三步细节）。
+- 纪律 / 规则 → user-level rule（system_prompt section）+ `.codebuddy/rules/ai-project-standard/RULE.mdc` **全文**（注入类步骤整文件定位）+ 其指向的 `.plan-standard/README.md`「MANDATORY」节与 `references/workflow.md`。
+- 钩子 → `.codebuddy/settings.json` 与 `.plan-standard/scripts/turn_gate.py` + 行号（含 `begin` / `record` / `end` 三步细节，函数内引用的全局变量同样挖到顶层定义行）。
 - 脚本 → `.plan-standard/scripts/append_history.py` + 行号。
 - 产出文件名建议 `project_analyze_flow.json`。
 
