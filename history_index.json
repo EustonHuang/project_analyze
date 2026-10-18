@@ -1,6 +1,6 @@
 {
-  "max_id": 50,
-  "revision": 50,
+  "max_id": 51,
+  "revision": 51,
   "briefs": [
     {
       "event_id": 1,
@@ -551,6 +551,17 @@
       "corrects_event_id": 48,
       "standard_version": "v0.8",
       "file": "history/050.json"
+    },
+    {
+      "event_id": 51,
+      "event_type": "correction",
+      "recorded_at": "2026-10-18T14:54:17.718932+08:00",
+      "actor_type": "ai",
+      "change_summary": "将 Cytoscape 实例从全局 window.cy 改为模块私有 graphCy；destroy/fit/resize 前均检查是否为函数，避免 window.cy 被污染时直接抛错导致流程图空白。",
+      "is_correction": true,
+      "corrects_event_id": 50,
+      "standard_version": "v0.8",
+      "file": "history/051.json"
     }
   ]
 }

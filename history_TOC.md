@@ -54,3 +54,4 @@
 - [048 · plan_modified · 2026-10-18T14:13:26](history/048.json) — 新增 architecture/008；修复流程图延迟渲染、简化节点标签、合并 kind 样式、增加 resize 处理；重写 project_analyze_flow.json，使所有 file 来源指向实际代码/配置行（如 turn_gate.py cmd_end、setti
 - [049 · correction · 2026-10-18T14:14:13](history/049.json) — 将 latest_version 从 7 修正为 8，补录 versions[8]，并重新生成 architecture_TOC.md。
 - [050 · correction · 2026-10-18T14:46:26](history/050.json) — 修复流程图空白：#cy 增加 min-height/width/position；renderGraph 延迟 100ms 并循环检查容器尺寸；Cytoscape 初始化后手动运行 breadthfirst layout，在 layoutstop 中再 fit 一次。
+- [051 · correction · 2026-10-18T14:54:17](history/051.json) — 将 Cytoscape 实例从全局 window.cy 改为模块私有 graphCy；destroy/fit/resize 前均检查是否为函数，避免 window.cy 被污染时直接抛错导致流程图空白。

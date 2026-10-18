@@ -5,6 +5,7 @@ let selectedId = null;
 let fileCache = null;      // { path, content, start, end, isMd }
 let fileMode = "raw";      // raw | rendered
 let viewerConfig = null;   // { project_root, default_trace } from /api/config
+let graphCy = null;        // Cytoscape instance (kept private to avoid window.cy clashes)
 
 const api = (p) => fetch(p).then((r) => r.json());
 
@@ -276,7 +277,10 @@ function renderFile() {
 // ---- graph overlay -------------------------------------------------------
 function renderGraph(g) {
   const container = document.getElementById("cy");
-  if (window.cy) { window.cy.destroy(); window.cy = null; }
+  if (graphCy && typeof graphCy.destroy === "function") {
+    try { graphCy.destroy(); } catch (_) {}
+  }
+  graphCy = null;
   const elements = [];
   Object.entries(g.nodes).forEach(([id, n]) => {
     const label = n.label || n.kind || "step";
@@ -298,7 +302,6 @@ function renderGraph(g) {
 
   function doRender() {
     if (!container.offsetWidth || !container.offsetHeight) {
-      // Container still has zero size; retry shortly.
       setTimeout(doRender, 50);
       return;
     }
@@ -310,7 +313,7 @@ function renderGraph(g) {
         "border-color": COLOR_BY_KIND[k],
       },
     }));
-    window.cy = cytoscape({
+    graphCy = cytoscape({
       container,
       elements,
       style: [
@@ -328,12 +331,12 @@ function renderGraph(g) {
         { selector: "edge.loop", style: { "line-style": "dashed", "loop-direction": "0deg", "loop-sweep": "-45deg" } },
       ],
     });
-    window.cy.on("tap", "node", (e) => {
+    graphCy.on("tap", "node", (e) => {
       const n = g.nodes[e.target.id()];
       if (n) select(n, true);
     });
-    window.cy.resize();
-    const layout = window.cy.layout({
+    graphCy.resize();
+    const layout = graphCy.layout({
       name: "breadthfirst",
       directed: true,
       padding: 20,
@@ -341,12 +344,13 @@ function renderGraph(g) {
       animate: false,
     });
     layout.on("layoutstop", () => {
-      if (window.cy) window.cy.fit(window.cy.elements(), 20);
+      if (graphCy && typeof graphCy.fit === "function") {
+        graphCy.fit(graphCy.elements(), 20);
+      }
     });
     layout.run();
   }
 
-  // Delay until the overlay's flex layout has produced actual dimensions.
   setTimeout(doRender, 100);
 }
 
@@ -398,9 +402,10 @@ document.getElementById("toggleGraph").onclick = () => {
 document.getElementById("closeGraph").onclick = closeGraph;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGraph(); });
 window.addEventListener("resize", () => {
-  if (window.cy && document.getElementById("graphOverlay").classList.contains("open")) {
-    window.cy.resize();
-    window.cy.fit();
+  if (graphCy && typeof graphCy.resize === "function" && typeof graphCy.fit === "function" &&
+      document.getElementById("graphOverlay").classList.contains("open")) {
+    graphCy.resize();
+    graphCy.fit();
   }
 });
 document.getElementById("mdRaw").onclick = () => { fileMode = "raw"; setMdButtons("raw"); renderFile(); };

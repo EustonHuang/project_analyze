@@ -1,0 +1,38 @@
+{
+  "schema_version": "2.0",
+  "event_type": "correction",
+  "actor": {
+    "type": "ai",
+    "identity": "CodeBuddy agent",
+    "detail": "根据用户提供的 Console 报错修复流程图：window.cy.destroy is not a function。根因是 window.cy 被外部（浏览器扩展或旧实例）污染，renderGraph 在调用 destroy 时直接抛错，后续 Cytoscape 初始化被中断。"
+  },
+  "source": {
+    "user_prompt": "@image 给我修！！！不要挑战我的耐心！！！！！！！！！！",
+    "prompt_language": "zh",
+    "tool": "CodeBuddy",
+    "session_id": "e583388246dd4b3ab13eea4b7bf2da7e",
+    "model": "unknown",
+    "model_confidence": "unknown"
+  },
+  "operation": {
+    "target_files": [
+      ".codebuddy/skills/agent-trace-view/web/app.js"
+    ],
+    "change_summary": "将 Cytoscape 实例从全局 window.cy 改为模块私有 graphCy；destroy/fit/resize 前均检查是否为函数，避免 window.cy 被污染时直接抛错导致流程图空白。",
+    "sections_affected": [],
+    "diff_reference": null
+  },
+  "correction": {
+    "corrects_event_id": 50,
+    "reason": "用户 Console 显示 Uncaught TypeError: window.cy.destroy is not a function at renderGraph，证明上一版修复仍因全局 window.cy 冲突而无法渲染。"
+  },
+  "comments": "source.model 置 'unknown'（env CODEBUDDY_MODEL 缺失）。",
+  "event_id": 51,
+  "recorded_at": "2026-10-18T14:54:17.718932+08:00",
+  "standard_version": "v0.8",
+  "plan_state_snapshot": {
+    "plan_md_sha256": "37def11624eecbf1f162d0ac2a2860ee56f1fbd4551e2f5bc47c9464d36874f1",
+    "plan_md_line_count": 48,
+    "source_doc": "architecture/008.md"
+  }
+}
